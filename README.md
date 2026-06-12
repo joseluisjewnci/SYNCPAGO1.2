@@ -1,6 +1,6 @@
 # SYNCPAGO Frontend
 
-Este proyecto contiene la interfaz web del sistema SYNCPAGO, desarrollada con HTML, CSS y JavaScript puro. Su finalidad es permitir a los usuarios gestionar gastos, recibos, recordatorios y visualizar un resumen financiero de manera sencilla.
+Este proyecto contiene la interfaz web del sistema SYNCPAGO, desarrollada con HTML, CSS y JavaScript puro. Su finalidad es permitir a los usuarios gestionar gastos, recibos, recordatorios y visualizar un resumen financiero de manera sencilla, además de incluir un panel administrativo para supervisar usuarios, recibos, solicitudes y notificaciones.
 
 ## 1. Descripción general
 
@@ -11,7 +11,8 @@ La carpeta Frontend está organizada como una aplicación web estática con pág
 - visualizar un dashboard,
 - consultar historial,
 - configurar recordatorios,
-- ver estadísticas por categoría y mes.
+- ver estadísticas por categoría y mes,
+- administrar usuarios, solicitudes y notificaciones desde un panel interno.
 
 La información se guarda principalmente en `localStorage`, por lo que el frontend funciona sin una base de datos propia.
 
@@ -24,6 +25,7 @@ Contiene todas las pantallas de la aplicación:
 - `register.html` — creación de cuenta.
 - `forgot-password.html` — recuperación de contraseña.
 - `dashboard.html` — resumen general y bienvenida.
+- `admin.html` — panel administrativo con gestión de usuarios, recibos, solicitudes y notificaciones.
 - `gastos.html` — gestión de recibos y gastos.
 - `recordatorios.html` — configuración de alertas y notificaciones.
 - `historial.html` — historial de pagos y recibos.
@@ -34,6 +36,8 @@ Contiene la lógica de interacción del frontend:
 
 - `auth.js` — login, registro, recuperación de contraseña, cierre de sesión y validación básica.
 - `dashboard.js` — cálculos del resumen financiero del dashboard.
+- `admin.js` — lógica del panel administrativo: usuarios, recibos, gestiones y respuestas.
+- `admin2.js` — navegación, menús, notificaciones masivas, historial de envíos y estado del sistema.
 - `gastos.js` — creación, edición, filtros, paginación y estado de los recibos.
 - `historial.js` — visualización y filtros del historial.
 - `recordatorios.js` — preferencias de notificaciones y alertas.
@@ -48,6 +52,7 @@ Archivos de estilos para la interfaz:
 - `layout.css` — estructura general de la app.
 - `components.css` — botones, tarjetas, tablas y modales.
 - `dashboard.css` — estilos del dashboard y gráficos.
+- `admin.css` — estilos específicos del panel administrativo.
 - `responsive.css` — diseño adaptable para móviles y pantallas pequeñas.
 - `variables.css` — variables de colores, tipografía y tamaños.
 
@@ -78,6 +83,13 @@ Carpeta para recursos visuales e íconos usados por la interfaz.
 - Control de días de anticipación.
 - Personalización del mensaje de notificación.
 
+### Panel administrativo
+- Gestión de usuarios activos y bloqueados.
+- Supervisión de recibos y estado financiero.
+- Seguimiento de solicitudes y PQR.
+- Envío de notificaciones individuales o masivas.
+- Vista del estado general del sistema.
+
 ### Historial
 - Consulta del historial completo de recibos.
 - Filtros por estado, categoría y rango de fechas.
@@ -87,7 +99,8 @@ Carpeta para recursos visuales e íconos usados por la interfaz.
 Este frontend funciona como una aplicación estática, por lo que puede abrirse directamente en el navegador.
 
 1. Abre cualquiera de los archivos HTML dentro de `pages/`, por ejemplo `pages/index.html`.
-2. Si prefieres usar un servidor local, puedes ejecutar:
+2. Para acceder al panel administrativo, abre `pages/admin.html`.
+3. Si prefieres usar un servidor local, puedes ejecutar:
 
    ```bash
    python -m http.server 3000
