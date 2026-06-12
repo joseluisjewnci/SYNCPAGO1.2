@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCPAGO — Estadísticas</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <nav class="sidebar" id="sidebar" aria-label="Menú principal">
+    <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
+    <div class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">🏠 Inicio</a>
+      <a class="nav-item" href="gastos.html">📋 Mis Recibos</a>
+      <a class="nav-item" href="recordatorios.html">🔔 Recordatorios</a>
+      <a class="nav-item active" href="insights.html">📊 Estadísticas</a>
+      <a class="nav-item" href="historial.html">🕓 Historial</a>
+    </div>
+    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Recibo</button>
+  </nav>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="main-wrap">
+
+    <header class="topbar" role="banner">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú">☰</button>
+      <div class="search-bar" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" placeholder="Buscar..." aria-label="Buscar">
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" aria-label="Notificaciones">🔔</button>
+        <div class="user-menu" onclick="toggleDropdown()" role="button" aria-haspopup="true">
+          <div class="avatar" aria-hidden="true">👤</div>
+          <span id="username-display">Usuario</span> ▾
+          <div class="user-dropdown" id="user-dropdown" role="menu">
+            <div class="dd-header">
+              <div class="dd-avatar" aria-hidden="true">👤</div>
+              <div class="dd-name" id="fullname-display">Usuario</div>
+              <div class="dd-email" id="email-display"></div>
+            </div>
+            <div class="dd-item logout" onclick="logout()" role="menuitem">↩ Cerrar sesión</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <header class="page-header">
+        <h1>Estadísticas financieras</h1>
+        <p>Analiza tus recibos mes a mes y toma mejores decisiones.</p>
+      </header>
+
+      <nav class="month-nav" aria-label="Navegación de meses">
+        <button onclick="changeMonth(-1)" aria-label="Mes anterior">← Anterior</button>
+        <span id="current-month" aria-live="polite">Cargando...</span>
+        <button onclick="changeMonth(1)" aria-label="Mes siguiente">Siguiente →</button>
+      </nav>
+
+      <section class="chart-section" aria-label="Resumen del mes">
+        <h2>Resumen del mes</h2>
+        <div class="total-row">
+          <span class="label">Total registrado</span>
+          <span class="value" id="ins-total">$0</span>
+        </div>
+        <div class="total-row">
+          <span class="label">✅ Pagado</span>
+          <span class="value green" id="ins-paid">$0</span>
+        </div>
+        <div class="total-row">
+          <span class="label">⏳ Pendiente</span>
+          <span class="value" id="ins-pending">$0</span>
+        </div>
+        <div class="total-row">
+          <span class="label">⚠️ Vencido</span>
+          <span class="value red" id="ins-overdue">$0</span>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="Distribución por categoría">
+        <h2>📊 Distribución por categoría</h2>
+        <div id="bars-container">
+          <p style="color:var(--gray-400);font-size:0.85rem">Sin datos para este mes.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <footer style="padding:16px 28px;font-size:0.78rem;color:var(--gray-400);text-align:center;border-top:1px solid var(--gray-200);">
+      © 2026 SYNCPAGO — Todos los derechos reservados
+    </footer>
+
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  requireAuth();
+
+  const catColors = {
+    "Vivienda":   "#3563e9",
+    "Servicios":  "#22c55e",
+    "Salud":      "#ef4444",
+    "Educación":  "#8b5cf6",
+    "Ocio":       "#f59e0b",
+    "Impuestos":  "#64748b",
+    "Otro":       "#eab308"
+  };
+
+  const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  let currentDate = new Date();
+
+  function cargarInsights() {
+    const mes  = currentDate.getMonth();
+    const anio = currentDate.getFullYear();
+
+    document.getElementById("current-month").textContent = `${MESES[mes]} ${anio}`;
+
+    const gastos  = JSON.parse(localStorage.getItem("gastos") || "[]");
+    const hoy     = new Date();
+
+    const delMes = gastos.filter(g => {
+      if (!g.activo) return false;
+      const f = new Date(g.fecha + "T12:00:00");
+      return f.getMonth() === mes && f.getFullYear() === anio;
+    });
+
+    const total    = delMes.reduce((a, g) => a + g.monto, 0);
+    const pagados  = delMes.filter(g => g.estado === "Pagado").reduce((a, g) => a + g.monto, 0);
+    const vencidos = delMes.filter(g => {
+      if (g.estado === "Pagado") return false;
+      return new Date(g.fecha + "T12:00:00") < hoy;
+    }).reduce((a, g) => a + g.monto, 0);
+    const pendiente = total - pagados - vencidos;
+
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+
+    set("ins-total",   formatMoney(total));
+    set("ins-paid",    formatMoney(pagados));
+    set("ins-pending", formatMoney(Math.max(0, pendiente)));
+    set("ins-overdue", formatMoney(vencidos));
+
+    const cats = {};
+    delMes.forEach(g => {
+      cats[g.categoria] = (cats[g.categoria] || 0) + g.monto;
+    });
+
+    const container = document.getElementById("bars-container");
+    if (Object.keys(cats).length === 0) {
+      container.innerHTML = `<p style="color:var(--gray-400);font-size:0.85rem">Sin datos para este mes.</p>`;
+      return;
+    }
+
+    const iconos = {
+      "Vivienda":"🏠","Servicios":"💡","Salud":"❤️",
+      "Educación":"📚","Ocio":"🎭","Impuestos":"📑","Otro":"📦"
+    };
+
+    container.innerHTML = Object.entries(cats)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, monto]) => {
+        const pct   = total > 0 ? Math.round((monto / total) * 100) : 0;
+        const color = catColors[cat] || "#94a3b8";
+        const icon  = iconos[cat]   || "📦";
+        return `
+        <div class="bar-item">
+          <div class="bar-label">
+            <span>${icon} ${cat}</span>
+            <span>${formatMoney(monto)} (${pct}%)</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+        </div>`;
+      }).join("");
+  }
+
+  function changeMonth(dir) {
+    currentDate.setMonth(currentDate.getMonth() + dir);
+    cargarInsights();
+  }
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("open");
+  }
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("open");
+  }
+  function toggleDropdown() {
+    document.getElementById("user-dropdown").classList.toggle("open");
+  }
+  document.addEventListener("click", e => {
+    const menu = document.querySelector(".user-menu");
+    const dd   = document.getElementById("user-dropdown");
+    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarInsights();
+  });
+</script>
+
+</body>
+</html>

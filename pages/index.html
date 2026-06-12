@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCPAGO — Iniciar sesión</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+  <style>
+    /* Selector de rol */
+    .role-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .role-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .role-btn.active {
+      border-color: var(--blue-mid);
+      background: #eff6ff;
+      color: var(--blue-mid);
+    }
+    .role-btn .role-icon { display: block; font-size: 1.4rem; margin-bottom: 4px; }
+    .role-label { font-size: 0.75rem; color: var(--gray-400); display: block; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+ 
+<div class="auth-screen">
+  <div class="auth-inner">
+ 
+    <header class="auth-logo" role="banner">
+      SYNC<span>PAGO</span>
+    </header>
+ 
+    <main>
+      <section class="auth-card" aria-label="Formulario de inicio de sesión">
+        <h1>Iniciar sesión</h1>
+ 
+        <!-- HU-ADM-01 / HU-ADM-02: Selector de rol -->
+        <span class="role-label">Ingresar como</span>
+        <div class="role-selector" role="group" aria-label="Seleccionar rol">
+          <button class="role-btn active" id="btn-cliente" onclick="selectRol('cliente')">
+            <span class="role-icon">👤</span>
+            Cliente
+          </button>
+          <button class="role-btn" id="btn-administrador" onclick="selectRol('administrador')">
+            <span class="role-icon">🛡️</span>
+            Administrador
+          </button>
+        </div>
+ 
+        <!-- Campo correo -->
+        <div class="field-group" id="fg-email">
+          <span class="icon" aria-hidden="true">✉</span>
+          <input type="email" id="email" placeholder="Correo electrónico"
+                 autocomplete="email" aria-label="Correo electrónico">
+          <p class="field-error" role="alert">Ingresa un correo válido.</p>
+        </div>
+ 
+        <!-- Campo contraseña -->
+        <div class="field-group" id="fg-pass">
+          <span class="icon" aria-hidden="true">🔒</span>
+          <input type="password" id="password" placeholder="Contraseña"
+                 autocomplete="current-password" aria-label="Contraseña">
+          <p class="field-error" role="alert">La contraseña es obligatoria.</p>
+        </div>
+ 
+        <a class="forgot-link" href="forgot-password.html">¿Olvidaste tu contraseña?</a>
+ 
+        <button class="btn-primary" onclick="handleLogin()">Iniciar sesión</button>
+      </section>
+ 
+      <p class="auth-link">
+        ¿No tienes cuenta? <a href="register.html">Regístrate</a>
+      </p>
+    </main>
+ 
+  </div>
+</div>
+ 
+<script src="../js/auth.js"></script>
+<script>
+  let rolSeleccionado = "cliente";
+ 
+  // HU-ADM-01: Seleccionar rol antes de iniciar sesión
+  function selectRol(rol) {
+    rolSeleccionado = rol;
+    document.getElementById("btn-cliente").classList.toggle("active", rol === "cliente");
+    document.getElementById("btn-administrador").classList.toggle("active", rol === "administrador");
+ 
+    // Sugerencia visual en el placeholder del correo
+    const input = document.getElementById("email");
+    if (rol === "administrador") {
+      input.placeholder = "Correo de administrador";
+    } else {
+      input.placeholder = "Correo electrónico";
+    }
+  }
+ 
+  // HU-ADM-02: Login con redirección según rol
+  function handleLogin() {
+    const email    = document.getElementById("email");
+    const password = document.getElementById("password");
+    let valid = true;
+ 
+    const setErr = (id, cond) => {
+      document.getElementById(id).classList.toggle("error", cond);
+      if (cond) valid = false;
+    };
+ 
+    setErr("fg-email", !email.value || !email.value.includes("@"));
+    setErr("fg-pass",  !password.value);
+ 
+    // FIX: ahora sí llama login() de auth.js con el rol seleccionado
+    if (valid) login(email.value, password.value, rolSeleccionado);
+  }
+ 
+  // Enter para iniciar sesión
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter") handleLogin();
+  });
+</script>
+ 
+</body>
+</html>
+ 

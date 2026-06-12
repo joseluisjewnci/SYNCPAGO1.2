@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCPAGO — Recordatorios</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+  <style>
+    .perm-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .perm-card h3 { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+    .perm-card p  { font-size: 0.83rem; color: var(--gray-500); line-height: 1.6; }
+    .perm-card ul { padding-left: 16px; margin: 6px 0 12px; }
+    .perm-card ul li { font-size: 0.82rem; color: var(--gray-500); list-style: disc; margin-bottom: 2px; }
+
+    .perm-question { font-size: 0.85rem; font-weight: 600; margin: 12px 0 8px; }
+    .radio-group   { display: flex; gap: 10px; flex-wrap: wrap; }
+    .radio-label {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .radio-label input { accent-color: var(--blue-mid); }
+    .radio-label.sel-green { border-color: var(--green); background: #dcfce7; color: #16a34a; }
+    .radio-label.sel-red   { border-color: var(--red);   background: #fee2e2; color: #b91c1c; }
+
+    .antelacion-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .ant-btn {
+      padding: 8px 16px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--gray-700); background: var(--white);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .ant-btn.active { border-color: var(--blue-mid); background: var(--blue-mid); color: var(--white); }
+
+    .notif-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-size: 0.83rem;
+      color: var(--gray-600);
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <nav class="sidebar" id="sidebar" aria-label="Menú principal">
+    <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
+    <div class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">🏠 Inicio</a>
+      <a class="nav-item" href="gastos.html">📋 Mis Recibos</a>
+      <a class="nav-item active" href="recordatorios.html">🔔 Recordatorios</a>
+      <a class="nav-item" href="insights.html">📊 Estadísticas</a>
+      <a class="nav-item" href="historial.html">🕓 Historial</a>
+    </div>
+    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Recibo</button>
+  </nav>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="main-wrap">
+
+    <header class="topbar" role="banner">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú">☰</button>
+      <div class="search-bar" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" placeholder="Buscar..." aria-label="Buscar">
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" aria-label="Notificaciones">
+          🔔<span class="notif-dot" aria-hidden="true"></span>
+        </button>
+        <div class="user-menu" onclick="toggleDropdown()" role="button" aria-haspopup="true">
+          <div class="avatar" aria-hidden="true">👤</div>
+          <span id="username-display">Usuario</span> ▾
+          <div class="user-dropdown" id="user-dropdown" role="menu">
+            <div class="dd-header">
+              <div class="dd-avatar" aria-hidden="true">👤</div>
+              <div class="dd-name" id="fullname-display">Usuario</div>
+              <div class="dd-email" id="email-display"></div>
+            </div>
+            <div class="dd-item logout" onclick="logout()" role="menuitem">↩ Cerrar sesión</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <header class="page-header">
+        <h1>Recordatorios</h1>
+        <p>Configura cómo y cuándo quieres recibir tus alertas de pago.</p>
+      </header>
+
+      <div class="tabs" role="tablist">
+        <div class="tab active" role="tab" aria-selected="true"
+             onclick="showTab('tab-permisos', this)">Recordatorio</div>
+        <div class="tab" role="tab" aria-selected="false"
+             onclick="showTab('tab-mensaje', this)">Mensaje de Notificación</div>
+        <div class="tab" role="tab" aria-selected="false"
+             onclick="showTab('tab-pagaste', this)">¿Lo pagaste?</div>
+      </div>
+
+      <section id="tab-permisos" role="tabpanel" aria-label="Configuración de recordatorios">
+        <p style="font-size:0.88rem;color:var(--gray-500);margin-bottom:16px;">
+          🔔 Activa las notificaciones para que te lleguen las alertas.
+        </p>
+
+        <article class="perm-card">
+          <h3>💬 Autorización de notificaciones por WhatsApp</h3>
+          <p>Para enviarte recordatorios necesitamos usar tu número y enviar mensajes vía WhatsApp.</p>
+          <ul>
+            <li>Notificar vencimientos próximos</li>
+            <li>Confirmar pagos realizados</li>
+            <li>Enviar alertas importantes de tus recibos</li>
+          </ul>
+          <p>No compartiremos tu información con terceros.</p>
+          <p class="perm-question">¿Deseas activar las notificaciones por WhatsApp?</p>
+          <div class="radio-group" role="group" aria-label="WhatsApp">
+            <label class="radio-label">
+              <input type="radio" name="wp" value="si" checked> Aceptar
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="wp" value="no"> Desactivar
+            </label>
+          </div>
+        </article>
+
+        <article class="perm-card">
+          <h3>📅 Autorización para acceso al calendario</h3>
+          <p>SYNCPAGO puede agregar recordatorios a tu calendario para ayudarte a organizar tus pagos.</p>
+          <ul>
+            <li>Crear eventos con fechas de vencimiento</li>
+            <li>Recordarte pagos próximos automáticamente</li>
+          </ul>
+          <p>No modificaremos otros eventos ni accederemos a información personal.</p>
+          <p class="perm-question">¿Deseas permitir el acceso a tu calendario?</p>
+          <div class="radio-group" role="group" aria-label="Calendario">
+            <label class="radio-label">
+              <input type="radio" name="cal" value="si"> Aceptar
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="cal" value="no" checked> Desactivar
+            </label>
+          </div>
+        </article>
+
+        <article class="perm-card">
+          <h3>⏰ Antelación de alertas</h3>
+          <p>¿Con cuántos días de anticipación deseas recibir el recordatorio de pago?</p>
+          <div class="antelacion-grid" id="ant-group" role="group" aria-label="Días de antelación">
+            <button class="ant-btn active" onclick="selectAnt(this, 1)" data-days="1">1 día antes</button>
+            <button class="ant-btn" onclick="selectAnt(this, 3)" data-days="3">3 días antes</button>
+            <button class="ant-btn" onclick="selectAnt(this, 5)" data-days="5">5 días antes</button>
+            <button class="ant-btn" onclick="selectAnt(this, 7)" data-days="7">1 semana antes</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="tab-mensaje" class="hidden" role="tabpanel" aria-label="Mensaje de notificación">
+
+        <div class="form-field" style="max-width:320px;margin-bottom:16px;">
+          <label for="sel-gasto">Selecciona el recibo</label>
+          <div class="select-wrap">
+            <select id="sel-gasto">
+              <option value="">Escoja el recibo que desea configurar</option>
+            </select>
+          </div>
+        </div>
+
+        <article class="perm-card">
+          <h3>🔔 Mensaje personalizado (opcional)</h3>
+          <p style="color:var(--blue-mid);font-size:0.8rem;margin-bottom:10px;">
+            Puedes escribir un mensaje que deseas ver cuando recibas la notificación.
+          </p>
+          <textarea class="form-field" id="msg-personalizado"
+            style="width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.85rem;min-height:80px;resize:none;"
+            placeholder='"Ej: No olvides pagar este recibo a tiempo"'
+            aria-label="Mensaje personalizado"></textarea>
+        </article>
+
+        <article class="perm-card">
+          <h3>🔔 Mensaje enviado por SYNCPAGO</h3>
+          <p style="font-size:0.8rem;color:var(--gray-500);margin-bottom:10px;">
+            Este es el mensaje base que siempre se enviará:
+          </p>
+          <div class="notif-box" role="note">
+            ⚠️ ¡Atención! Tu recibo está próximo a vencer (Nombre del recibo)<br>
+            📋 No olvides realizar tu pago para evitar retrasos o cargos adicionales.<br>
+            📅 Revisa la fecha límite y mantén tus pagos al día.<br>
+            ✅ SYNCPAGO te ayuda a estar siempre organizado.
+          </div>
+        </article>
+      </section>
+
+      <section id="tab-pagaste" class="hidden" role="tabpanel" aria-label="Confirmar pago">
+        <article class="perm-card">
+          <h3>✅ Confirmar pago</h3>
+          <p>Aquí podrás marcar tus recibos como pagados una vez realices el pago.
+             También puedes hacerlo directamente desde la sección <a href="gastos.html"
+             style="color:var(--blue-mid);font-weight:600;">Mis Recibos</a>.</p>
+        </article>
+      </section>
+
+    </main>
+
+    <footer style="padding:16px 28px;font-size:0.78rem;color:var(--gray-400);text-align:center;border-top:1px solid var(--gray-200);">
+      © 2026 SYNCPAGO — Todos los derechos reservados
+    </footer>
+
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/recordatorios.js"></script>
+<script>
+  requireAuth();
+
+  const TABS = ["tab-permisos", "tab-mensaje", "tab-pagaste"];
+
+  function showTab(id, btn) {
+    TABS.forEach(t => {
+      const el = document.getElementById(t);
+      if (el) el.classList.add("hidden");
+    });
+    document.getElementById(id)?.classList.remove("hidden");
+    document.querySelectorAll(".tab").forEach(t => {
+      t.classList.remove("active");
+      t.setAttribute("aria-selected", "false");
+    });
+    btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+  }
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("open");
+  }
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("open");
+  }
+  function toggleDropdown() {
+    document.getElementById("user-dropdown").classList.toggle("open");
+  }
+  document.addEventListener("click", e => {
+    const menu = document.querySelector(".user-menu");
+    const dd   = document.getElementById("user-dropdown");
+    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
+  });
+</script>
+
+</body>
+</html>

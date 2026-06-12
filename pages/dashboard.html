@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCPAGO — Dashboard</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+
+<div class="app-layout">
+
+  <nav class="sidebar" id="sidebar" aria-label="Menú principal">
+    <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
+    <div class="sidebar-nav">
+      <a class="nav-item active" href="dashboard.html" data-i18n="inicio">🏠 Inicio</a>
+      <a class="nav-item" href="gastos.html" data-i18n="recibos">📋 Mis Recibos</a>
+      <a class="nav-item" href="recordatorios.html" data-i18n="recordatorios">
+        🔔 Recordatorios
+        <span class="nav-badge" id="badge-rec">0</span>
+      </a>
+      <a class="nav-item" href="insights.html" data-i18n="estadisticas">📊 Estadísticas</a>
+      <a class="nav-item" href="historial.html" data-i18n="historial">🕓 Historial</a>
+    </div>
+    <button class="nav-btn-add" onclick="window.location.href='gastos.html'"
+            data-i18n="agregar">+ Agregar Recibo</button>
+  </nav>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="main-wrap">
+
+    <header class="topbar" role="banner">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú">☰</button>
+
+      <div class="search-bar" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" placeholder="Buscar Recibos..." id="global-search"
+               aria-label="Buscar recibos" data-i18n-placeholder="buscar">
+      </div>
+
+      <div class="topbar-right">
+        <div class="lang-switcher" role="group" aria-label="Idioma">
+          <button class="lang-btn" onclick="setLang('es', this)">ES</button>
+          <button class="lang-btn" onclick="setLang('en', this)">EN</button>
+        </div>
+
+        <button class="notif-btn" aria-label="Notificaciones">
+          🔔<span class="notif-dot" aria-hidden="true"></span>
+        </button>
+
+        <div class="user-menu" onclick="toggleDropdown()" role="button"
+             aria-haspopup="true" aria-expanded="false">
+          <div class="avatar" aria-hidden="true">👤</div>
+          <span id="username-display">Usuario</span>
+          <span aria-hidden="true">▾</span>
+
+          <div class="user-dropdown" id="user-dropdown" role="menu">
+            <div class="dd-header">
+              <div class="dd-avatar" aria-hidden="true">👤</div>
+              <div class="dd-name" id="fullname-display">Usuario</div>
+              <div class="dd-email" id="email-display"></div>
+            </div>
+            <div class="dd-item manage" role="menuitem">🛠 Gestionar cuenta</div>
+            <div class="dd-item logout" onclick="logout()" role="menuitem">↩ Cerrar sesión</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content" id="main-content">
+
+      <section class="welcome-banner" aria-label="Bienvenida">
+        <h1>¡Te damos la bienvenida, <span id="welcome-name">Usuario</span>!</h1>
+        <p>Aquí tienes un resumen de tus finanzas. Revisa tus próximos pagos y mantente al día.</p>
+      </section>
+
+      <section aria-label="Resumen financiero">
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-label">Total este mes</div>
+            <div class="kpi-value" id="kpi-total">$0</div>
+            <div class="kpi-sub">en recibos registrados</div>
+          </article>
+          <article class="kpi-card green">
+            <div class="kpi-label">Pagados</div>
+            <div class="kpi-value" id="kpi-paid">0</div>
+            <div class="kpi-sub">obligaciones al día</div>
+          </article>
+          <article class="kpi-card yellow">
+            <div class="kpi-label">Pendientes</div>
+            <div class="kpi-value" id="kpi-pending">0</div>
+            <div class="kpi-sub">próximos a vencer</div>
+          </article>
+          <article class="kpi-card red">
+            <div class="kpi-label">Vencidos</div>
+            <div class="kpi-value" id="kpi-overdue">0</div>
+            <div class="kpi-sub">requieren atención</div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-label="Funcionalidades principales">
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📂</div>
+            <div>
+              <h2>1. Centraliza</h2>
+              <p>Reúne todos tus gastos (arriendo, luz, salud...) en un solo lugar seguro.</p>
+            </div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📅</div>
+            <div>
+              <h2>2. Automatiza</h2>
+              <p>Configura ciclos de pago y recibe alertas automáticas antes del vencimiento.</p>
+            </div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📱</div>
+            <div>
+              <h2>3. Notificaciones</h2>
+              <p>Alertas preventivas por WhatsApp para pagar a tiempo y evitar mora.</p>
+            </div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📊</div>
+            <div>
+              <h2>4. Historial</h2>
+              <p>Consulta el historial completo de tus consumos y analiza tu flujo de efectivo.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <footer style="padding:16px 28px;font-size:0.78rem;color:var(--gray-400);text-align:center;border-top:1px solid var(--gray-200);">
+      © 2026 SYNCPAGO — Todos los derechos reservados
+    </footer>
+
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/dashboard.js"></script>
+<script>
+  requireAuth();
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("open");
+  }
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("open");
+  }
+  function toggleDropdown() {
+    const dd = document.getElementById("user-dropdown");
+    dd.classList.toggle("open");
+  }
+  document.addEventListener("click", e => {
+    const menu = document.querySelector(".user-menu");
+    const dd   = document.getElementById("user-dropdown");
+    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const gastos  = JSON.parse(localStorage.getItem("gastos") || "[]");
+    const hoy     = new Date();
+    const proximos = gastos.filter(g => {
+      if (!g.activo || g.estado === "Pagado") return false;
+      const diff = Math.ceil((new Date(g.fecha + "T12:00:00") - hoy) / 86400000);
+      return diff >= 0 && diff <= 3;
+    }).length;
+    const badge = document.getElementById("badge-rec");
+    if (badge) badge.textContent = proximos;
+  });
+</script>
+
+</body>
+</html>

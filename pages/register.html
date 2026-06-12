@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCPAGO — Crear cuenta</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-inner">
+
+    <header class="auth-logo" role="banner">
+      SYNC<span>PAGO</span>
+    </header>
+
+    <main>
+      <section class="auth-card" aria-label="Formulario de registro">
+        <h1>Crear cuenta</h1>
+
+        <div class="field-group" id="fg-name">
+          <span class="icon" aria-hidden="true">👤</span>
+          <input type="text" id="name" placeholder="Nombre completo"
+                 autocomplete="name" aria-label="Nombre completo">
+          <p class="field-error" role="alert">El nombre completo es obligatorio.</p>
+        </div>
+
+        <div class="field-group" id="fg-email">
+          <span class="icon" aria-hidden="true">✉</span>
+          <input type="email" id="email" placeholder="Correo electrónico"
+                 autocomplete="email" aria-label="Correo electrónico">
+          <p class="field-error" role="alert">Ingresa un correo válido.</p>
+        </div>
+
+        <div class="field-group" id="fg-phone">
+          <span class="icon" aria-hidden="true">📱</span>
+          <input type="tel" id="phone" placeholder="Celular (para WhatsApp)"
+                 autocomplete="tel" aria-label="Número de celular">
+          <p class="field-error" role="alert">Ingresa un número válido.</p>
+        </div>
+
+        <div class="field-group" id="fg-pass">
+          <span class="icon" aria-hidden="true">🔒</span>
+          <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)"
+                 autocomplete="new-password" aria-label="Contraseña">
+          <p class="field-error" role="alert">La contraseña debe tener al menos 6 caracteres.</p>
+        </div>
+
+        <div class="field-group" id="fg-pass2">
+          <span class="icon" aria-hidden="true">🔒</span>
+          <input type="password" id="password2" placeholder="Confirmar contraseña"
+                 autocomplete="new-password" aria-label="Confirmar contraseña">
+          <p class="field-error" role="alert">Las contraseñas no coinciden.</p>
+        </div>
+
+        <button class="btn-primary" onclick="handleRegister()">Registrarse</button>
+      </section>
+
+      <p class="auth-link">
+        ¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a>
+      </p>
+    </main>
+
+  </div>
+</div>
+
+<script src="../js/auth.js"></script>
+<script>
+  function handleRegister() {
+    const name  = document.getElementById("name");
+    const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
+    const pass  = document.getElementById("password");
+    const pass2 = document.getElementById("password2");
+    let valid = true;
+
+    const setErr = (id, cond) => {
+      document.getElementById(id).classList.toggle("error", cond);
+      if (cond) valid = false;
+    };
+
+    setErr("fg-name",  !name.value.trim());
+    setErr("fg-email", !email.value.includes("@"));
+    setErr("fg-phone", !phone.value.trim());
+    setErr("fg-pass",  pass.value.length < 6);
+    setErr("fg-pass2", pass.value !== pass2.value);
+
+    if (valid) register(name.value, email.value, phone.value, pass.value);
+  }
+</script>
+
+</body>
+</html>
