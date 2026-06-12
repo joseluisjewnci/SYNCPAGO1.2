@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="../css/auth.css">
   <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
   <style>
-    /* Selector de rol */
     .role-selector {
       display: flex;
       gap: 10px;
@@ -51,7 +50,6 @@
       <section class="auth-card" aria-label="Formulario de inicio de sesión">
         <h1>Iniciar sesión</h1>
  
-        <!-- HU-ADM-01 / HU-ADM-02: Selector de rol -->
         <span class="role-label">Ingresar como</span>
         <div class="role-selector" role="group" aria-label="Seleccionar rol">
           <button class="role-btn active" id="btn-cliente" onclick="selectRol('cliente')">
@@ -64,7 +62,6 @@
           </button>
         </div>
  
-        <!-- Campo correo -->
         <div class="field-group" id="fg-email">
           <span class="icon" aria-hidden="true">✉</span>
           <input type="email" id="email" placeholder="Correo electrónico"
@@ -72,7 +69,6 @@
           <p class="field-error" role="alert">Ingresa un correo válido.</p>
         </div>
  
-        <!-- Campo contraseña -->
         <div class="field-group" id="fg-pass">
           <span class="icon" aria-hidden="true">🔒</span>
           <input type="password" id="password" placeholder="Contraseña"
@@ -97,13 +93,11 @@
 <script>
   let rolSeleccionado = "cliente";
  
-  // HU-ADM-01: Seleccionar rol antes de iniciar sesión
   function selectRol(rol) {
     rolSeleccionado = rol;
     document.getElementById("btn-cliente").classList.toggle("active", rol === "cliente");
     document.getElementById("btn-administrador").classList.toggle("active", rol === "administrador");
  
-    // Sugerencia visual en el placeholder del correo
     const input = document.getElementById("email");
     if (rol === "administrador") {
       input.placeholder = "Correo de administrador";
@@ -112,7 +106,6 @@
     }
   }
  
-  // HU-ADM-02: Login con redirección según rol
   function handleLogin() {
     const email    = document.getElementById("email");
     const password = document.getElementById("password");
@@ -126,11 +119,9 @@
     setErr("fg-email", !email.value || !email.value.includes("@"));
     setErr("fg-pass",  !password.value);
  
-    // FIX: ahora sí llama login() de auth.js con el rol seleccionado
     if (valid) login(email.value, password.value, rolSeleccionado);
   }
  
-  // Enter para iniciar sesión
   document.addEventListener("keydown", e => {
     if (e.key === "Enter") handleLogin();
   });
