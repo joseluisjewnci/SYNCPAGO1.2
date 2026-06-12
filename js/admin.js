@@ -1,13 +1,3 @@
-// ============================================================
-// admin.js — Panel de Administrador
-// HU-ADM-03: Gestionar usuarios
-// HU-ADM-04: Supervisar recibos
-// HU-ADM-05: Supervisar gestiones administrativas
-// HU-ADM-06: Responder solicitudes de clientes
-// ============================================================
-
-// ─── HELPERS ─────────────────────────────────────────────────
-
 function fmtFecha(str) {
   if (!str) return "—";
   return new Date(str + "T12:00:00").toLocaleDateString("es-CO", {
@@ -26,7 +16,6 @@ function badgeEstado(estado) {
   return `<span class="badge ${map[estado] || "badge-yellow"}">${estado}</span>`;
 }
 
-// ─── TAB NAVIGATION ──────────────────────────────────────────
 
 function showAdminTab(tabId, btn) {
   document.querySelectorAll(".admin-tab-content").forEach(t => t.classList.add("hidden"));
@@ -34,14 +23,12 @@ function showAdminTab(tabId, btn) {
   document.getElementById(tabId)?.classList.remove("hidden");
   btn.classList.add("active");
 
-  // Cargar datos de la sección activa
   if (tabId === "tab-usuarios")     renderUsuarios();
   if (tabId === "tab-recibos")      renderAdminRecibos();
   if (tabId === "tab-gestiones")    renderGestiones();
   if (tabId === "tab-notificaciones") renderNotificaciones();
 }
 
-// ─── PANEL PRINCIPAL — ESTADÍSTICAS ──────────────────────────
 
 function renderDashboardAdmin() {
   const usuarios     = JSON.parse(localStorage.getItem("sp_usuarios")      || "[]");
@@ -57,7 +44,6 @@ function renderDashboardAdmin() {
   set("stat-sinresp",    notifs.filter(n => n.estado === "Sin responder").length);
 }
 
-// ─── HU-ADM-03: GESTIÓN DE USUARIOS ─────────────────────────
 
 function renderUsuarios(filtro = "") {
   const tbody = document.getElementById("admin-usuarios-tbody");
@@ -97,7 +83,6 @@ function renderUsuarios(filtro = "") {
     </tr>`).join("");
 }
 
-// HU-ADM-03 Escenario 2: Bloquear / activar usuario
 function toggleUsuario(id) {
   const lista = JSON.parse(localStorage.getItem("sp_usuarios") || "[]");
   const user  = lista.find(u => u.id === id);
@@ -110,7 +95,6 @@ function toggleUsuario(id) {
   renderDashboardAdmin();
 }
 
-// HU-ADM-03 Escenario 1: Registrar nuevo usuario (admin lo crea manualmente)
 function agregarUsuarioAdmin() {
   const nombre  = document.getElementById("new-user-nombre")?.value.trim();
   const correo  = document.getElementById("new-user-correo")?.value.trim();
@@ -145,7 +129,6 @@ function agregarUsuarioAdmin() {
   showToast("Usuario registrado ✓");
 }
 
-// ─── HU-ADM-04: SUPERVISAR RECIBOS ──────────────────────────
 
 function renderAdminRecibos(filtro = "") {
   const tbody = document.getElementById("admin-recibos-tbody");
@@ -190,7 +173,6 @@ function _getEstadoRecibo(g) {
   return "Pendiente";
 }
 
-// ─── HU-ADM-05: GESTIONES ADMINISTRATIVAS ───────────────────
 
 function renderGestiones(filtro = "") {
   const tbody = document.getElementById("admin-gestiones-tbody");
@@ -225,7 +207,6 @@ function renderGestiones(filtro = "") {
     </tr>`).join("");
 }
 
-// HU-ADM-05 Escenario 2: Actualizar estado de gestión
 function cambiarEstadoGestion(id, nuevoEstado) {
   const lista = JSON.parse(localStorage.getItem("sp_gestiones") || "[]");
   const item  = lista.find(g => g.id === id);
@@ -237,7 +218,6 @@ function cambiarEstadoGestion(id, nuevoEstado) {
   showToast("Estado actualizado ✓");
 }
 
-// ─── HU-ADM-06: RESPONDER SOLICITUDES ───────────────────────
 
 function renderNotificaciones() {
   const tbody = document.getElementById("admin-notif-tbody");
@@ -265,7 +245,6 @@ function renderNotificaciones() {
     </tr>`).join("");
 }
 
-// HU-ADM-06 Escenario 1: Abrir modal de respuesta
 function abrirRespuesta(id) {
   const notifs = JSON.parse(localStorage.getItem("sp_notificaciones") || "[]");
   const notif  = notifs.find(n => n.id === id);
@@ -278,12 +257,10 @@ function abrirRespuesta(id) {
   document.getElementById("modal-respuesta").classList.add("open");
 }
 
-// HU-ADM-06 Escenario 2: Guardar respuesta y actualizar estado notificación
 function enviarRespuesta() {
   const id       = Number(document.getElementById("resp-id").value);
   const respuesta = document.getElementById("resp-texto").value.trim();
 
-  // HU-ADM-06 Escenario 2: Campo vacío → solicitar completar
   if (!respuesta) {
     showToast("Debes escribir una respuesta antes de enviar.");
     document.getElementById("resp-texto").focus();
@@ -294,7 +271,6 @@ function enviarRespuesta() {
   const notif  = notifs.find(n => n.id === id);
   if (!notif) return;
 
-  // HU-ADM-06: Guardar respuesta y actualizar estado
   notif.respuesta = respuesta;
   notif.estado    = "Respondida";
   localStorage.setItem("sp_notificaciones", JSON.stringify(notifs));
@@ -305,13 +281,11 @@ function enviarRespuesta() {
   showToast("Respuesta enviada ✓");
 }
 
-// ─── INIT ────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
   renderDashboardAdmin();
 });
 
-// Exponer funciones usadas en onclick del HTML
 window.showAdminTab         = showAdminTab;
 window.renderUsuarios       = renderUsuarios;
 window.toggleUsuario        = toggleUsuario;
