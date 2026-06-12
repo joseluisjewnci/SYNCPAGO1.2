@@ -16,13 +16,8 @@
 <body>
 
 <div class="app-layout">
-
-  <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
   <nav class="sidebar" id="sidebar" aria-label="Menú administrativo">
-
     <div class="sidebar-logo" role="img" aria-label="SyncPago Admin">SYNC<span>PAGO</span></div>
-
-    <!-- Admin user info -->
     <div class="admin-user-info">
       <div class="avatar-circle">🛡️</div>
       <div class="admin-name" id="sidebar-admin-name">Administrador</div>
@@ -60,11 +55,7 @@
     </div>
   </nav>
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
-
-  <!-- ══ MAIN ════════════════════════════════════════════════ -->
   <div class="main-wrap">
-
-    <!-- Topbar -->
     <header class="topbar" role="banner">
       <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú">☰</button>
 
@@ -88,18 +79,12 @@
         </div>
       </div>
     </header>
-
-    <!-- ══ CONTENT ══════════════════════════════════════════ -->
     <main class="content admin-content" id="main-content">
-
-      <!-- ─── DASHBOARD ─────────────────────────────────── -->
       <section class="admin-section active" id="section-dashboard" aria-label="Dashboard">
         <header class="page-header">
           <h1>Inicio Administrativo</h1>
           <p>Resumen general del sistema SYNCPAGO.</p>
         </header>
-
-        <!-- Stats grid -->
         <div class="stat-grid">
           <div class="stat-card purple">
             <div class="stat-label">Usuarios Totales</div>
@@ -132,8 +117,6 @@
             <div class="stat-sub">notificaciones</div>
           </div>
         </div>
-
-        <!-- Quick overview tables -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
 
           <div class="section-card">
@@ -160,8 +143,6 @@
 
         </div>
       </section>
-
-      <!-- ─── USUARIOS ───────────────────────────────────── -->
       <section class="admin-section" id="section-usuarios" aria-label="Gestión de usuarios">
         <header class="page-header">
           <h1>👥 Gestión de Usuarios</h1>
@@ -199,8 +180,6 @@
           </div>
         </div>
       </section>
-
-      <!-- ─── RECIBOS ────────────────────────────────────── -->
       <section class="admin-section" id="section-recibos" aria-label="Supervisión de recibos">
         <header class="page-header">
           <h1>📋 Supervisión de Recibos</h1>
@@ -242,23 +221,17 @@
           </div>
         </div>
       </section>
-
-      <!-- ─── SOLICITUDES Y PQR ──────────────────────────── -->
       <section class="admin-section" id="section-solicitudes" aria-label="Solicitudes y PQR">
         <header class="page-header">
           <h1>📨 Solicitudes</h1>
           <p>Gestiona las solicitudes enviadas por los usuarios.</p>
         </header>
-
-        <!-- Sub-tabs -->
         <div class="tabs" role="tablist" style="margin-bottom:20px">
           <div class="tab active" role="tab" aria-selected="true"
                onclick="showPqrTab('gestiones', this)">🗂️ Gestiones</div>
           <div class="tab" role="tab" aria-selected="false"
                onclick="showPqrTab('mensajes', this)">💬 Mensajes</div>
         </div>
-
-        <!-- Gestiones tab -->
         <div id="pqr-tab-gestiones">
           <div class="section-card">
             <div class="admin-toolbar">
@@ -283,8 +256,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Mensajes tab -->
         <div id="pqr-tab-mensajes" class="hidden">
           <div class="section-card">
             <div style="overflow-x:auto">
@@ -298,15 +269,11 @@
           </div>
         </div>
       </section>
-
-      <!-- ─── NOTIFICACIONES ─────────────────────────────── -->
       <section class="admin-section" id="section-notificaciones" aria-label="Notificaciones">
         <header class="page-header">
           <h1>🔔 Notificaciones</h1>
           <p>Crea y gestiona notificaciones para los usuarios.</p>
         </header>
-
-        <!-- Composer -->
         <div class="section-card" style="margin-bottom:24px">
           <div class="section-card-header"><h2>✉️ Nueva Notificación</h2></div>
           <div class="section-card-body">
@@ -343,8 +310,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Historial de notificaciones enviadas -->
         <div class="section-card">
           <div class="section-card-header"><h2>📋 Historial de notificaciones enviadas</h2></div>
           <div style="overflow-x:auto">
@@ -357,8 +322,6 @@
           </div>
         </div>
       </section>
-
-      <!-- ─── ESTADO DEL SISTEMA ─────────────────────────── -->
       <section class="admin-section" id="section-sistema" aria-label="Estado del sistema">
         <header class="page-header">
           <h1>⚙️ Estado del Sistema</h1>
@@ -428,10 +391,6 @@
     </footer>
   </div>
 </div>
-
-<!-- ══ MODALS ════════════════════════════════════════════════ -->
-
-<!-- Modal: Nuevo usuario -->
 <div class="modal-overlay" id="modal-nuevo-usuario" role="dialog" aria-modal="true">
   <div class="modal">
     <div class="modal-header">
@@ -458,8 +417,6 @@
     </div>
   </div>
 </div>
-
-<!-- Modal: Responder solicitud -->
 <div class="modal-overlay" id="modal-respuesta" role="dialog" aria-modal="true">
   <div class="modal">
     <div class="modal-header">
@@ -485,11 +442,7 @@
     </div>
   </div>
 </div>
-
-<!-- Toast -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-<!-- ══ SCRIPTS ════════════════════════════════════════════════ -->
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/admin.js"></script>
