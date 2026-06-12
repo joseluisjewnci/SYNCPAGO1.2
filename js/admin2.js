@@ -1,6 +1,5 @@
 requireAdmin();
 
-  // ── Sidebar / layout ──────────────────────────────────────
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("open");
     document.getElementById("overlay").classList.toggle("open");
@@ -18,7 +17,6 @@ requireAdmin();
     if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
   });
 
-  // ── Section navigation ────────────────────────────────────
     const SECTION_TITLES = {
         dashboard:      "Dashboard Administrativo",
         usuarios:       "Gestión de Usuarios",
@@ -29,18 +27,14 @@ requireAdmin();
     };
 
   function showSection(name, linkEl) {
-    // Hide all sections
     document.querySelectorAll(".admin-section").forEach(s => s.classList.remove("active"));
     document.getElementById("section-" + name)?.classList.add("active");
 
-    // Update nav active state
     document.querySelectorAll(".nav-item[data-section]").forEach(a => a.classList.remove("active"));
     if (linkEl) linkEl.classList.add("active");
 
-    // Update topbar title
     document.getElementById("topbar-section-title").textContent = SECTION_TITLES[name] || name;
 
-    // Load data for active section
     const loaders = {
       dashboard:      () => { renderDashboardAdmin(); renderDashQuick(); },
       usuarios:       () => renderUsuarios(),
@@ -51,12 +45,10 @@ requireAdmin();
     };
     loaders[name]?.();
 
-    // Close mobile sidebar
     closeSidebar();
     return false;
   }
 
-  // ── PQR sub-tabs ─────────────────────────────────────────
   function showPqrTab(tab, btn) {
     ["gestiones","mensajes"].forEach(t => {
       const el = document.getElementById("pqr-tab-" + t);
@@ -70,7 +62,6 @@ requireAdmin();
     btn.setAttribute("aria-selected", "true");
   }
 
-  // ── Modal helpers ─────────────────────────────────────────
   function openModal(id)  { document.getElementById(id)?.classList.add("open"); }
   function closeModal(id) { document.getElementById(id)?.classList.remove("open"); }
 
@@ -78,7 +69,6 @@ requireAdmin();
     o.addEventListener("click", e => { if (e.target === o) o.classList.remove("open"); })
   );
 
-  // ── Notif type toggle ─────────────────────────────────────
   function selectNotifType(tipo) {
     ["individual","masiva"].forEach(t =>
       document.getElementById("btn-type-" + t)?.classList.toggle("active", t === tipo)
@@ -87,12 +77,10 @@ requireAdmin();
     if (wrap) wrap.style.display = tipo === "individual" ? "block" : "none";
   }
 
-  // ── Dashboard quick tables ────────────────────────────────
   function renderDashQuick() {
     const usuarios  = JSON.parse(localStorage.getItem("sp_usuarios")  || "[]");
     const gestiones = JSON.parse(localStorage.getItem("sp_gestiones") || "[]");
 
-    // Last 5 users
     const uTbody = document.getElementById("dash-usuarios-tbody");
     if (uTbody) {
       const recent = [...usuarios].reverse().slice(0, 5);
@@ -106,7 +94,6 @@ requireAdmin();
             </tr>`).join("");
     }
 
-    // Last 5 gestiones
     const gTbody = document.getElementById("dash-gestiones-tbody");
     if (gTbody) {
       const recent = [...gestiones].reverse().slice(0, 5);
@@ -120,7 +107,6 @@ requireAdmin();
             </tr>`).join("");
     }
 
-    // Badge PQR
     const sinResp = JSON.parse(localStorage.getItem("sp_notificaciones") || "[]")
       .filter(n => n.estado === "Sin responder").length;
     const badge = document.getElementById("badge-pqr");
@@ -130,7 +116,6 @@ requireAdmin();
     }
   }
 
-  // ── Notif historial ───────────────────────────────────────
   function renderNotifHistorial() {
     const tbody = document.getElementById("notif-historial-tbody");
     if (!tbody) return;
@@ -189,7 +174,6 @@ requireAdmin();
     showToast("Notificación enviada ✓");
   }
 
-  // ── Sistema ───────────────────────────────────────────────
   function renderSistema() {
     const usuarios  = JSON.parse(localStorage.getItem("sp_usuarios")  || "[]");
     const gastos    = JSON.parse(localStorage.getItem("gastos")        || "[]");
@@ -205,7 +189,6 @@ requireAdmin();
     set("sys-last-update", now.toLocaleString("es-CO", { dateStyle:"medium", timeStyle:"short" }));
   }
 
-  // ── Populate sidebar user info ────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const name = user.nombre || "Administrador";
@@ -218,6 +201,5 @@ requireAdmin();
     setTxt("fullname-display",    name);
     setTxt("email-display",       mail);
 
-    // Load initial section
     showSection("dashboard", document.querySelector("[data-section='dashboard']"));
   });
