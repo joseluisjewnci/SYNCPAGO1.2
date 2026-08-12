@@ -1,13 +1,13 @@
 # SYNCPAGO Frontend
 
-Este proyecto contiene la interfaz web del sistema SYNCPAGO, desarrollada con HTML, CSS y JavaScript puro. Su finalidad es permitir a los usuarios gestionar gastos, recibos, recordatorios y visualizar un resumen financiero de manera sencilla, además de incluir un panel administrativo para supervisar usuarios, recibos, solicitudes y notificaciones.
+Este proyecto contiene la interfaz web del sistema SYNCPAGO, desarrollada con HTML, CSS y JavaScript puro. Su finalidad es permitir a los usuarios gestionar gastos, recordatorios y visualizar un resumen financiero de manera sencilla, además de incluir un panel administrativo para supervisar usuarios, solicitudes y notificaciones.
 
 ## 1. Descripción general
 
 La carpeta Frontend está organizada como una aplicación web estática con páginas independientes y lógica JavaScript para:
 
 - iniciar sesión y registrarse,
-- manejar gastos y recibos,
+- manejar gastos,
 - visualizar un dashboard,
 - consultar historial,
 - configurar recordatorios,
@@ -25,10 +25,10 @@ Contiene todas las pantallas de la aplicación:
 - `register.html` — creación de cuenta.
 - `forgot-password.html` — recuperación de contraseña.
 - `dashboard.html` — resumen general y bienvenida.
-- `admin.html` — panel administrativo con gestión de usuarios, recibos, solicitudes y notificaciones.
-- `gastos.html` — gestión de recibos y gastos.
+- `admin.html` — panel administrativo con gestión de usuarios, gastos, solicitudes y notificaciones.
+- `gastos.html` — gestión de gastos.
 - `recordatorios.html` — configuración de alertas y notificaciones.
-- `historial.html` — historial de pagos y recibos.
+- `historial.html` — historial de pagos y gastos.
 - `insights.html` — estadísticas por categoría y mes.
 
 ### `js/`
@@ -36,9 +36,9 @@ Contiene la lógica de interacción del frontend:
 
 - `auth.js` — login, registro, recuperación de contraseña, cierre de sesión y validación básica.
 - `dashboard.js` — cálculos del resumen financiero del dashboard.
-- `admin.js` — lógica del panel administrativo: usuarios, recibos, gestiones y respuestas.
-- `admin2.js` — navegación, menús, notificaciones masivas, historial de envíos y estado del sistema.
-- `gastos.js` — creación, edición, filtros, paginación y estado de los recibos.
+- `admin.js` — lógica del panel administrativo: usuarios, gastos, gestiones y respuestas.
+- `admin-ui.js` — navegación, menús, notificaciones masivas, historial de envíos y estado del sistema.
+- `gastos.js` — creación, edición, filtros, paginación y estado de los gastos.
 - `historial.js` — visualización y filtros del historial.
 - `recordatorios.js` — preferencias de notificaciones y alertas.
 - `utils.js` — funciones auxiliares como moneda, formato y mensajes emergentes.
@@ -67,8 +67,8 @@ Carpeta para recursos visuales e íconos usados por la interfaz.
 - Recuperación de contraseña.
 - Cierre de sesión.
 
-### Gestión de recibos
-- Crear, editar y eliminar recibos.
+### Gestión de gastos
+- Crear, editar y eliminar gastos.
 - Filtrar por categoría, estado o texto.
 - Paginación en listados.
 - Marcar como pagado o pendiente.
@@ -85,13 +85,13 @@ Carpeta para recursos visuales e íconos usados por la interfaz.
 
 ### Panel administrativo
 - Gestión de usuarios activos y bloqueados.
-- Supervisión de recibos y estado financiero.
+- Supervisión de gasto y estado financiero.
 - Seguimiento de solicitudes y PQR.
 - Envío de notificaciones individuales o masivas.
 - Vista del estado general del sistema.
 
 ### Historial
-- Consulta del historial completo de recibos.
+- Consulta del historial completo de gastos.
 - Filtros por estado, categoría y rango de fechas.
 
 ## 4. Cómo ejecutar el frontend
