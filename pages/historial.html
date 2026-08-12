@@ -18,12 +18,12 @@
     <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
     <div class="sidebar-nav">
       <a class="nav-item" href="dashboard.html">🏠 Inicio</a>
-      <a class="nav-item" href="gastos.html">📋 Mis Recibos</a>
+      <a class="nav-item" href="gastos.html">📋 Mis Gastos</a>
       <a class="nav-item" href="recordatorios.html">🔔 Recordatorios</a>
       <a class="nav-item" href="insights.html">📊 Estadísticas</a>
       <a class="nav-item active" href="historial.html">🕓 Historial</a>
     </div>
-    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Recibo</button>
+    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Gasto</button>
   </nav>
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
@@ -57,7 +57,7 @@
 
       <header class="page-header">
         <h1>Historial</h1>
-        <p>Consulta el historial completo de tus recibos registrados.</p>
+        <p>Consulta el historial completo de tus gastos registrados.</p>
       </header>
 
       <section aria-label="Filtros de historial">
@@ -134,26 +134,7 @@
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/historial.js"></script>
-<script>
-  requireAuth();
-
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("open");
-  }
-  function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("open");
-  }
-  function toggleDropdown() {
-    document.getElementById("user-dropdown").classList.toggle("open");
-  }
-  document.addEventListener("click", e => {
-    const menu = document.querySelector(".user-menu");
-    const dd   = document.getElementById("user-dropdown");
-    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
-  });
-</script>
+<script src="../js/layout.js"></script>
 
 </body>
 </html>
