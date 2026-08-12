@@ -67,12 +67,12 @@
     <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
     <div class="sidebar-nav">
       <a class="nav-item" href="dashboard.html">🏠 Inicio</a>
-      <a class="nav-item" href="gastos.html">📋 Mis Recibos</a>
+      <a class="nav-item" href="gastos.html">📋 Mis Gastos</a>
       <a class="nav-item active" href="recordatorios.html">🔔 Recordatorios</a>
       <a class="nav-item" href="insights.html">📊 Estadísticas</a>
       <a class="nav-item" href="historial.html">🕓 Historial</a>
     </div>
-    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Recibo</button>
+    <button class="nav-btn-add" onclick="window.location.href='gastos.html'">+ Agregar Gasto</button>
   </nav>
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
@@ -130,7 +130,7 @@
           <ul>
             <li>Notificar vencimientos próximos</li>
             <li>Confirmar pagos realizados</li>
-            <li>Enviar alertas importantes de tus recibos</li>
+            <li>Enviar alertas importantes de tus gastos</li>
           </ul>
           <p>No compartiremos tu información con terceros.</p>
           <p class="perm-question">¿Deseas activar las notificaciones por WhatsApp?</p>
@@ -178,10 +178,10 @@
       <section id="tab-mensaje" class="hidden" role="tabpanel" aria-label="Mensaje de notificación">
 
         <div class="form-field" style="max-width:320px;margin-bottom:16px;">
-          <label for="sel-gasto">Selecciona el recibo</label>
+          <label for="sel-gasto">Selecciona el gasto</label>
           <div class="select-wrap">
             <select id="sel-gasto">
-              <option value="">Escoja el recibo que desea configurar</option>
+              <option value="">Escoja el gasto que desea configurar</option>
             </select>
           </div>
         </div>
@@ -193,7 +193,7 @@
           </p>
           <textarea class="form-field" id="msg-personalizado"
             style="width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.85rem;min-height:80px;resize:none;"
-            placeholder='"Ej: No olvides pagar este recibo a tiempo"'
+            placeholder='"Ej: No olvides pagar este gasto a tiempo"'
             aria-label="Mensaje personalizado"></textarea>
         </article>
 
@@ -203,7 +203,7 @@
             Este es el mensaje base que siempre se enviará:
           </p>
           <div class="notif-box" role="note">
-            ⚠️ ¡Atención! Tu recibo está próximo a vencer (Nombre del recibo)<br>
+            ⚠️ ¡Atención! Tu gasto está próximo a vencer (Nombre del gasto)<br>
             📋 No olvides realizar tu pago para evitar retrasos o cargos adicionales.<br>
             📅 Revisa la fecha límite y mantén tus pagos al día.<br>
             ✅ SYNCPAGO te ayuda a estar siempre organizado.
@@ -214,9 +214,9 @@
       <section id="tab-pagaste" class="hidden" role="tabpanel" aria-label="Confirmar pago">
         <article class="perm-card">
           <h3>✅ Confirmar pago</h3>
-          <p>Aquí podrás marcar tus recibos como pagados una vez realices el pago.
+          <p>Aquí podrás marcar tus gastos como pagados una vez realices el pago.
              También puedes hacerlo directamente desde la sección <a href="gastos.html"
-             style="color:var(--blue-mid);font-weight:600;">Mis Recibos</a>.</p>
+             style="color:var(--blue-mid);font-weight:600;">Mis Gastos</a>.</p>
         </article>
       </section>
 
@@ -233,10 +233,10 @@
 
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
+<script src="../js/layout.js"></script>
 <script src="../js/recordatorios.js"></script>
-<script>
-  requireAuth();
 
+<script>
   const TABS = ["tab-permisos", "tab-mensaje", "tab-pagaste"];
 
   function showTab(id, btn) {
@@ -244,31 +244,17 @@
       const el = document.getElementById(t);
       if (el) el.classList.add("hidden");
     });
+
     document.getElementById(id)?.classList.remove("hidden");
+
     document.querySelectorAll(".tab").forEach(t => {
       t.classList.remove("active");
       t.setAttribute("aria-selected", "false");
     });
+
     btn.classList.add("active");
     btn.setAttribute("aria-selected", "true");
   }
-
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("open");
-  }
-  function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("open");
-  }
-  function toggleDropdown() {
-    document.getElementById("user-dropdown").classList.toggle("open");
-  }
-  document.addEventListener("click", e => {
-    const menu = document.querySelector(".user-menu");
-    const dd   = document.getElementById("user-dropdown");
-    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
-  });
 </script>
 
 </body>
