@@ -1,24 +1,19 @@
+// gastos.js — Adaptado al backend real
 
 (function () {
 
-  let gastos            = JSON.parse(localStorage.getItem("gastos") || "[]");
-  let paginaActual      = 1;
-  const POR_PAGINA      = 8;
-  let editingId         = null;
+  let listaActual  = [];
+  let paginaActual = 1;
+  const POR_PAGINA = 8;
+  let editingId    = null;
 
-  function guardarGastos() {
-    localStorage.setItem("gastos", JSON.stringify(gastos));
-  }
-
-
+  // ── Helpers de UI ──
   function getStatus(g) {
     if (g.estado === "Pagado") return { label: "Pagado", cls: "badge-green" };
-    const hoy  = new Date();
-    const fecha = new Date(g.fecha + "T12:00:00");
-    const diff  = Math.ceil((fecha - hoy) / 86400000);
-    if (diff < 0)  return { label: "Vencido",  cls: "badge-red" };
-    if (diff === 0) return { label: "Hoy",      cls: "badge-today" };
-    return { label: "Pendiente", cls: "badge-yellow" };
+    const diff = Math.ceil((new Date(g.fecha + "T12:00:00") - new Date()) / 86400000);
+    if (diff < 0)   return { label: "Vencido",  cls: "badge-red" };
+    if (diff === 0) return { label: "Hoy",       cls: "badge-today" };
+    return              { label: "Pendiente", cls: "badge-yellow" };
   }
 
   function fmtFecha(f) {
@@ -27,20 +22,21 @@
     });
   }
 
+  // ── Render tabla ──
   function renderGastos(lista) {
-    lista = lista ?? gastos.filter(g => g.activo);
+    listaActual = lista ?? listaActual;
 
     const tbody = document.getElementById("gastos-tbody");
     if (!tbody) return;
 
-    const total = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+    const total  = Math.max(1, Math.ceil(listaActual.length / POR_PAGINA));
     if (paginaActual > total) paginaActual = total;
 
-    const inicio  = (paginaActual - 1) * POR_PAGINA;
-    const pagina  = lista.slice(inicio, inicio + POR_PAGINA);
+    const inicio = (paginaActual - 1) * POR_PAGINA;
+    const pagina = listaActual.slice(inicio, inicio + POR_PAGINA);
 
     tbody.innerHTML = pagina.length === 0
-      ? `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--gray-400)">Sin recibos registrados</td></tr>`
+      ? `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--gray-400)">Sin gastos registrados</td></tr>`
       : pagina.map(g => {
           const st = getStatus(g);
           return `
@@ -71,34 +67,49 @@
     document.getElementById("btn-next").disabled    = paginaActual === total;
   }
 
-
-  function filterGastos() {
-    const texto     = (document.getElementById("search2")?.value || "").toLowerCase();
-    const categoria = document.getElementById("filter-cat")?.value  || "";
-    const estado    = document.getElementById("filter-status")?.value || "";
-
-    let lista = gastos.filter(g => g.activo);
-    if (texto)     lista = lista.filter(g => g.nombre.toLowerCase().includes(texto));
-    if (categoria) lista = lista.filter(g => g.categoria === categoria);
-    if (estado)    lista = lista.filter(g => getStatus(g).label === estado);
-
-    paginaActual = 1;
-    renderGastos(lista);
+  // ── Cargar desde backend ──
+  async function cargarGastos() {
+    try {
+      const lista = await GastosAPI.listar({ activo: true });
+      renderGastos(lista);
+    } catch (err) {
+      showToast("❌ Error cargando gastos: " + err.message);
+    }
   }
 
+  // ── Filtros (llaman al backend con parámetros) ──
+  async function filterGastos() {
+    const nombre    = (document.getElementById("search2")?.value      || "").trim();
+    const categoria =  document.getElementById("filter-cat")?.value   || "";
+    const estado    =  document.getElementById("filter-status")?.value || "";
+
+    try {
+      const lista = await GastosAPI.listar({
+        activo:    true,
+        nombre:    nombre    || undefined,
+        categoria: categoria || undefined,
+        estado:    estado    || undefined
+      });
+      paginaActual = 1;
+      renderGastos(lista);
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
+  }
 
   function changePage(dir) {
-    const total = Math.max(1, Math.ceil(gastos.filter(g => g.activo).length / POR_PAGINA));
+    const total = Math.max(1, Math.ceil(listaActual.length / POR_PAGINA));
     paginaActual = Math.min(Math.max(1, paginaActual + dir), total);
     renderGastos();
   }
 
-
-  function addGasto() {
+  // ── Agregar gasto ──
+  async function addGasto() {
     const nombre = document.getElementById("new-nombre");
     const monto  = document.getElementById("new-monto");
     const fecha  = document.getElementById("new-fecha");
 
+    // Validación frontend
     let ok = true;
     [["ff-nombre", !nombre.value.trim()],
      ["ff-monto",  !monto.value || Number(monto.value) <= 0],
@@ -109,36 +120,35 @@
     });
     if (!ok) return;
 
-    gastos.unshift({
-      id:        Date.now(),
-      nombre:    nombre.value.trim(),
-      categoria: document.getElementById("new-categoria").value || "Otro",
-      monto:     Number(monto.value),
-      fecha:     fecha.value,
-      ciclo:     document.getElementById("new-ciclo").value,
-      color:     document.getElementById("new-color").value,
-      estado:    "Pendiente",
-      activo:    true
-    });
+    try {
+      await GastosAPI.crear({
+        nombre:    nombre.value.trim(),
+        categoria: document.getElementById("new-categoria").value || "Otro",
+        monto:     Number(monto.value),
+        fecha:     fecha.value,
+        ciclo:     document.getElementById("new-ciclo").value,
+        color:     document.getElementById("new-color").value,
+        estado:    "Pendiente"
+      });
 
-    guardarGastos();
-    renderGastos();
-    closeModal("modal-nuevo");
+      nombre.value = ""; monto.value = ""; fecha.value = "";
+      ["ff-nombre","ff-monto","ff-fecha"].forEach(id =>
+        document.getElementById(id)?.classList.remove("error")
+      );
 
-    nombre.value = "";
-    monto.value  = "";
-    fecha.value  = "";
-    ["ff-nombre","ff-monto","ff-fecha"].forEach(id =>
-      document.getElementById(id)?.classList.remove("error")
-    );
-
-    showToast("Recibo agregado ✓");
+      closeModal("modal-nuevo");
+      await cargarGastos();
+      showToast("Gasto agregado ✓");
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
   }
 
-
-  function openEdit(id) {
+  // ── Editar ──
+  async function openEdit(id) {
     editingId = id;
-    const g = gastos.find(x => x.id === id);
+    // Buscar en la lista ya cargada (evita una petición extra)
+    const g = listaActual.find(x => x.id === id);
     if (!g) return;
 
     document.getElementById("edit-nombre").value    = g.nombre;
@@ -151,66 +161,68 @@
     openModal("modal-editar");
   }
 
-  function saveEdit() {
-    const g = gastos.find(x => x.id === editingId);
-    if (!g) return;
-
-    g.nombre    = document.getElementById("edit-nombre").value;
-    g.categoria = document.getElementById("edit-categoria").value;
-    g.monto     = Number(document.getElementById("edit-monto").value);
-    g.fecha     = document.getElementById("edit-fecha").value;
-    g.ciclo     = document.getElementById("edit-ciclo").value;
-    g.color     = document.getElementById("edit-color").value;
-
-    guardarGastos();
-    renderGastos();
-    closeModal("modal-editar");
-    showToast("Recibo actualizado ✓");
+  async function saveEdit() {
+    try {
+      await GastosAPI.editar(editingId, {
+        nombre:    document.getElementById("edit-nombre").value,
+        categoria: document.getElementById("edit-categoria").value,
+        monto:     Number(document.getElementById("edit-monto").value),
+        fecha:     document.getElementById("edit-fecha").value,
+        ciclo:     document.getElementById("edit-ciclo").value,
+        color:     document.getElementById("edit-color").value
+      });
+      closeModal("modal-editar");
+      await cargarGastos();
+      showToast("Gasto actualizado ✓");
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
   }
 
-
-  function softDelete(id) {
-    if (!confirm("¿Seguro que deseas eliminar este recibo?")) return;
-    const g = gastos.find(x => x.id === (id ?? editingId));
-    if (!g) return;
-
-    g.activo = false;
-    guardarGastos();
-    renderGastos();
-    closeModal("modal-editar");
-    showToast("Recibo eliminado ✓");
+  // ── Soft delete ──
+  async function softDelete(id) {
+    if (!confirm("¿Seguro que deseas eliminar este gasto?")) return;
+    try {
+      await GastosAPI.eliminar(id ?? editingId);
+      closeModal("modal-editar");
+      await cargarGastos();
+      showToast("Gasto eliminado ✓");
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
   }
 
-
-  function marcarPagado(id) {
-    const g = gastos.find(x => x.id === id);
-    if (!g) return;
-    g.estado = "Pagado";
-    guardarGastos();
-    renderGastos();
-    showToast("Recibo marcado como pagado ✓");
+  // ── Marcar pagado / pendiente ──
+  async function marcarPagado(id) {
+    try {
+      await GastosAPI.marcarEstado(id, "Pagado");
+      await cargarGastos();
+      showToast("Gasto marcado como pagado ✓");
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
   }
 
-  function marcarPendiente(id) {
-    const g = gastos.find(x => x.id === id);
-    if (!g) return;
-    g.estado = "Pendiente";
-    guardarGastos();
-    renderGastos();
-    showToast("Recibo marcado como pendiente ✓");
+  async function marcarPendiente(id) {
+    try {
+      await GastosAPI.marcarEstado(id, "Pendiente");
+      await cargarGastos();
+      showToast("Gasto marcado como pendiente ✓");
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
   }
 
-
-  window.addGasto       = addGasto;
-  window.openEdit       = openEdit;
-  window.saveEdit       = saveEdit;
-  window.softDelete     = softDelete;
-  window.marcarPagado   = marcarPagado;
+  // ── Exponer funciones globales ──
+  window.addGasto        = addGasto;
+  window.openEdit        = openEdit;
+  window.saveEdit        = saveEdit;
+  window.softDelete      = softDelete;
+  window.marcarPagado    = marcarPagado;
   window.marcarPendiente = marcarPendiente;
-  window.filterGastos   = filterGastos;
-  window.changePage     = changePage;
+  window.filterGastos    = filterGastos;
+  window.changePage      = changePage;
 
-
-  document.addEventListener("DOMContentLoaded", () => renderGastos());
+  document.addEventListener("DOMContentLoaded", () => cargarGastos());
 
 })();
