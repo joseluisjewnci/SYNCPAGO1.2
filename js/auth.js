@@ -1,122 +1,102 @@
-const ADMIN_EMAIL    = "admin@syncpago.com";
-const ADMIN_PASSWORD = "admin123";
- 
+// auth.js
+// localStorage se usa SOLO para: token JWT, datos básicos del usuario autenticado.
+// La validación real del token se hace contra el backend en requireAuth/requireAdmin.
+
 async function login(email, password, rol = "cliente") {
- 
-  if (rol === "administrador") {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      localStorage.setItem("token", "admin-token");
-      localStorage.setItem("user", JSON.stringify({
-        nombre: "Administrador",
-        correo: ADMIN_EMAIL,
-        rol:    "administrador"
-      }));
-      _inicializarDatosAdmin(); 
-      window.location.href = "admin.html";
-    } else {
-      alert("Acceso denegado. Credenciales de administrador incorrectas.");
-    }
-    return;
-  }
- 
   try {
-    const response = await fetch("http://127.0.0.1:8000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo: email, password: password })
-    });
- 
-    const data = await response.json();
- 
+    const data = await AuthAPI.login(email, password);
+
     if (!data.success) { alert(data.mensaje); return; }
- 
+
     const usuario = data.usuario || {};
-    usuario.rol   = "cliente"; 
-    localStorage.setItem("token", data.token || "usuario-autenticado");
-    localStorage.setItem("user", JSON.stringify(usuario));
-    _registrarUsuarioEnLista(usuario); 
-    window.location.href = "dashboard.html";
- 
-  } catch (error) {
-    console.warn("Backend no disponible, modo demo:", error);
-    const nombre = email.split("@")[0];
-    const usuario = {
-      nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1),
-      correo: email,
-      rol:    "cliente"
-    };
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("user", JSON.stringify(usuario));
-    _registrarUsuarioEnLista(usuario);
-    window.location.href = "dashboard.html";
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user",  JSON.stringify(usuario));
+
+    window.location.href = usuario.rol === "administrador"
+      ? "admin.html"
+      : "dashboard.html";
+
+  } catch (err) {
+    alert("Error al iniciar sesión: " + err.message);
   }
 }
- 
+
 async function register(name, email, phone, password) {
   try {
-    const response = await fetch("http://127.0.0.1:8000/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre: name, correo: email, celular: phone, password: password })
-    });
-    const data = await response.json();
-    alert(data.mensaje);
+    const data = await AuthAPI.register(name, email, phone, password);
+    alert(data.mensaje || "Cuenta creada exitosamente.");
     if (data.success) window.location.href = "index.html";
-  } catch (error) {
-    console.warn("Backend no disponible:", error);
-    alert("Cuenta creada exitosamente (modo demo).");
-    window.location.href = "index.html";
+  } catch (err) {
+    alert("Error al registrarse: " + err.message);
   }
 }
 
 async function forgotPassword(email) {
   try {
-    await fetch("http://127.0.0.1:8000/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo: email })
-    });
-  } catch (error) {
-    console.warn("Backend no disponible:", error);
+    await AuthAPI.forgotPassword(email);
+  } catch (err) {
+    console.error("Error al recuperar contraseña:", err.message);
   }
 }
- 
+
 function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   window.location.href = "index.html";
 }
- 
-function requireAuth() {
-  const token = localStorage.getItem("token");
-  if (!token) { window.location.href = "index.html"; return; }
- 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
- 
 
-  if (user.rol === "administrador") {
-    window.location.href = "admin.html";
-    return;
-  }
- 
-  _poblarDOM(user);
-}
- 
-function requireAdmin() {
+// Verifica el token contra el backend.
+// Si el token es inválido o expiró, el backend responde 401
+// y handleResponse() en api.js redirige a index.html automáticamente.
+async function requireAuth() {
   const token = localStorage.getItem("token");
   if (!token) { window.location.href = "index.html"; return; }
- 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
- 
-  if (user.rol !== "administrador") {
-    alert("Acceso denegado. No tienes permisos de administrador.");
+
+  try {
+    // Llama al backend para validar el token y obtener el usuario real
+    const usuario = await AuthAPI.me();
+
+    // Actualizar localStorage con los datos frescos del backend
+    localStorage.setItem("user", JSON.stringify(usuario));
+
+    if (usuario.rol === "administrador") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    _poblarDOM(usuario);
+
+  } catch (err) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "index.html";
-    return;
   }
- 
-  _poblarDOM(user);
 }
- 
+
+async function requireAdmin() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "index.html"; return; }
+
+  try {
+    const usuario = await AuthAPI.me();
+
+    localStorage.setItem("user", JSON.stringify(usuario));
+
+    if (usuario.rol !== "administrador") {
+      alert("Acceso denegado.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    _poblarDOM(usuario);
+
+  } catch (err) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "index.html";
+  }
+}
+
 function _poblarDOM(user) {
   const nombre = user.nombre || user.name  || "Usuario";
   const correo = user.correo || user.email || "";
@@ -131,44 +111,20 @@ function _poblarDOM(user) {
     if (el) el.textContent = val;
   });
 }
- 
-function _registrarUsuarioEnLista(usuario) {
-  const lista = JSON.parse(localStorage.getItem("sp_usuarios") || "[]");
-  const existe = lista.find(u => u.correo === usuario.correo);
-  if (!existe) {
-    lista.push({
-      id:      Date.now(),
-      nombre:  usuario.nombre,
-      correo:  usuario.correo,
-      celular: usuario.celular || "",
-      rol:     "cliente",
-      activo:  true,
-      fechaRegistro: new Date().toISOString().split("T")[0]
-    });
-    localStorage.setItem("sp_usuarios", JSON.stringify(lista));
+
+function handleForgot() {
+  const email = document.getElementById("email");
+  const fg    = document.getElementById("fg-email");
+
+  if (!email.value.includes("@")) {
+    fg.classList.add("error");
+    return;
   }
+  fg.classList.remove("error");
+
+  forgotPassword(email.value);
+  document.getElementById("success-msg").classList.remove("hidden");
+
+  document.querySelector(".btn-primary").disabled    = true;
+  document.querySelector(".btn-primary").textContent = "Enlace enviado";
 }
- 
-function _inicializarDatosAdmin() {
-  if (!localStorage.getItem("sp_usuarios")) {
-    localStorage.setItem("sp_usuarios", JSON.stringify([
-      { id: 1, nombre: "Juan Pérez",  correo: "juan@email.com",  celular: "3001234567", rol: "cliente", activo: true,  fechaRegistro: "2026-05-10" },
-      { id: 2, nombre: "María López", correo: "maria@email.com", celular: "3109876543", rol: "cliente", activo: true,  fechaRegistro: "2026-05-15" },
-      { id: 3, nombre: "Carlos Ruiz", correo: "carlos@email.com",celular: "3207654321", rol: "cliente", activo: false, fechaRegistro: "2026-05-20" }
-    ]));
-  }
-  if (!localStorage.getItem("sp_gestiones")) {
-    localStorage.setItem("sp_gestiones", JSON.stringify([
-      { id: 1, titulo: "Error al registrar recibo",    descripcion: "No me deja guardar el recibo de arriendo.", estado: "Pendiente",   fecha: "2026-06-01", userId: 1, usuarioNombre: "Juan Pérez"  },
-      { id: 2, titulo: "Cambio de correo electrónico", descripcion: "Necesito actualizar mi correo en el sistema.", estado: "En proceso", fecha: "2026-06-03", userId: 2, usuarioNombre: "María López" },
-      { id: 3, titulo: "Eliminar cuenta",              descripcion: "Deseo eliminar mi cuenta permanentemente.", estado: "Resuelto",   fecha: "2026-05-28", userId: 3, usuarioNombre: "Carlos Ruiz" }
-    ]));
-  }
-  if (!localStorage.getItem("sp_notificaciones")) {
-    localStorage.setItem("sp_notificaciones", JSON.stringify([
-      { id: 1, mensaje: "¿Por qué me cobran doble en el recibo de luz?", respuesta: "", estado: "Sin responder", fecha: "2026-06-05", userId: 1, usuarioNombre: "Juan Pérez"  },
-      { id: 2, mensaje: "Mi contraseña no funciona desde ayer.",         respuesta: "Hemos restablecido tu contraseña. Revisa tu correo.", estado: "Respondida", fecha: "2026-06-04", userId: 2, usuarioNombre: "María López" }
-    ]));
-  }
-}
- 
