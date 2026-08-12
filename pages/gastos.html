@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SYNCPAGO — Mis Recibos</title>
+  <title>SYNCPAGO — Mis Gastos</title>
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/base.css">
   <link rel="stylesheet" href="../css/layout.css">
@@ -19,12 +19,12 @@
     <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
     <div class="sidebar-nav">
       <a class="nav-item" href="dashboard.html">🏠 Inicio</a>
-      <a class="nav-item active" href="gastos.html">📋 Mis Recibos</a>
+      <a class="nav-item active" href="gastos.html">📋 Mis Gastos</a>
       <a class="nav-item" href="recordatorios.html">🔔 Recordatorios</a>
       <a class="nav-item" href="insights.html">📊 Estadísticas</a>
       <a class="nav-item" href="historial.html">🕓 Historial</a>
     </div>
-    <button class="nav-btn-add" onclick="openModal('modal-nuevo')">+ Agregar Recibo</button>
+    <button class="nav-btn-add" onclick="openModal('modal-nuevo')">+ Agregar Gasto</button>
   </nav>
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
@@ -35,7 +35,7 @@
       <div class="search-bar" role="search">
         <span class="search-icon" aria-hidden="true">🔍</span>
         <input type="text" id="search" placeholder="Buscar por Empresa/Servicio..."
-               oninput="filterGastos()" aria-label="Buscar recibo">
+               oninput="filterGastos()" aria-label="Buscar gasto">
       </div>
       <div class="topbar-right">
         <button class="notif-btn" aria-label="Notificaciones">🔔</button>
@@ -56,12 +56,12 @@
     <main class="content">
 
       <header class="page-header">
-        <h1>Mis Recibos</h1>
+        <h1>Mis Gastos</h1>
         <p>Gestiona todas tus obligaciones financieras en un solo lugar.</p>
       </header>
 
       <div class="page-notice" role="note">
-        Todo recibo registrado puede ser editado en cualquier momento. Al eliminar, el registro se conserva en el historial.
+        Todo gasto registrado puede ser editado en cualquier momento. Al eliminar, el registro se conserva en el historial.
       </div>
 
       <section aria-label="Filtros de búsqueda">
@@ -89,13 +89,13 @@
 
           <div class="search-input-wrap">
             <span aria-hidden="true" style="color:var(--gray-400);font-size:0.85rem">🔍</span>
-            <input type="text" placeholder="Buscar recibo..." id="search2"
-                   oninput="filterGastos()" aria-label="Buscar recibo">
+            <input type="text" placeholder="Buscar gasto..." id="search2"
+                   oninput="filterGastos()" aria-label="Buscar gasto">
           </div>
         </div>
       </section>
 
-      <section aria-label="Tabla de recibos">
+      <section aria-label="Tabla de gastos">
         <table class="data-table" role="table">
           <thead>
             <tr>
@@ -131,15 +131,15 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-nuevo" role="dialog" aria-modal="true" aria-label="Nuevo recibo">
+<div class="modal-overlay" id="modal-nuevo" role="dialog" aria-modal="true" aria-label="Nuevo gasto">
   <div class="modal">
     <div class="modal-header">
       <button class="modal-back" onclick="closeModal('modal-nuevo')" aria-label="Cerrar">←</button>
-      <h2>Nuevo recibo</h2>
+      <h2>Nuevo gasto</h2>
     </div>
     <div class="modal-body">
       <div class="form-field" id="ff-nombre">
-        <label for="new-nombre">📋 Nombre del recibo</label>
+        <label for="new-nombre">📋 Nombre del gasto</label>
         <input type="text" id="new-nombre" placeholder="Ej: Arriendo, Luz, Netflix...">
         <p class="field-error" role="alert">El nombre es obligatorio.</p>
       </div>
@@ -190,11 +190,11 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-editar" role="dialog" aria-modal="true" aria-label="Editar recibo">
+<div class="modal-overlay" id="modal-editar" role="dialog" aria-modal="true" aria-label="Editar gasto">
   <div class="modal">
     <div class="modal-header">
       <button class="modal-back" onclick="closeModal('modal-editar')" aria-label="Cerrar">←</button>
-      <h2>Editar recibo</h2>
+      <h2>Editar gasto</h2>
     </div>
     <div class="modal-body">
       <div class="form-field">
@@ -247,32 +247,7 @@
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/gastos.js"></script>
-<script>
-  requireAuth();
-
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("open");
-  }
-  function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("open");
-  }
-  function toggleDropdown() {
-    document.getElementById("user-dropdown").classList.toggle("open");
-  }
-  function openModal(id)  { document.getElementById(id).classList.add("open"); }
-  function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-
-  document.querySelectorAll(".modal-overlay").forEach(o =>
-    o.addEventListener("click", e => { if (e.target === o) o.classList.remove("open"); })
-  );
-  document.addEventListener("click", e => {
-    const menu = document.querySelector(".user-menu");
-    const dd   = document.getElementById("user-dropdown");
-    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
-  });
-</script>
+<script src="../js/layout.js"></script>
 
 </body>
 </html>
