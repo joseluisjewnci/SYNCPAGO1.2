@@ -1,7 +1,8 @@
+// historial.js — Adaptado al backend real
 
 (function () {
 
-  let historial    = JSON.parse(localStorage.getItem("gastos") || "[]");
+  let listaActual  = [];
   let paginaActual = 1;
   const POR_PAGINA = 8;
 
@@ -12,26 +13,22 @@
   }
 
   function getEstado(g) {
-    if (!g.activo) return { texto: "Eliminado", clase: "" };
-    if (g.estado === "Pagado") return { texto: "Pagado", clase: "badge-green" };
-
-    const hoy  = new Date();
-    const fecha = new Date(g.fecha + "T12:00:00");
-    const diff  = Math.ceil((fecha - hoy) / 86400000);
-
+    if (!g.activo)          return { texto: "Eliminado", clase: "" };
+    if (g.estado === "Pagado") return { texto: "Pagado",    clase: "badge-green" };
+    const diff = Math.ceil((new Date(g.fecha + "T12:00:00") - new Date()) / 86400000);
     if (diff < 0)   return { texto: "Vencido",  clase: "badge-red" };
     if (diff === 0) return { texto: "Hoy",       clase: "badge-today" };
-    return { texto: "Pendiente", clase: "badge-yellow" };
+    return              { texto: "Pendiente", clase: "badge-yellow" };
   }
 
   function renderHistorial(lista) {
-    lista = lista ?? historial;
+    listaActual = lista ?? listaActual;
 
-    const total = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+    const total  = Math.max(1, Math.ceil(listaActual.length / POR_PAGINA));
     if (paginaActual > total) paginaActual = total;
 
     const inicio = (paginaActual - 1) * POR_PAGINA;
-    const pagina = lista.slice(inicio, inicio + POR_PAGINA);
+    const pagina = listaActual.slice(inicio, inicio + POR_PAGINA);
 
     const tbody = document.getElementById("hist-tbody");
     if (!tbody) return;
@@ -63,35 +60,50 @@
     document.getElementById("hist-next").disabled        = paginaActual === total;
   }
 
-  function changeHistPage(dir) {
-    const total = Math.max(1, Math.ceil(historial.length / POR_PAGINA));
-    paginaActual = Math.min(Math.max(1, paginaActual + dir), total);
-    renderHistorial();
+  // Carga todo el historial (activos + eliminados) desde el backend
+  async function cargarHistorial() {
+    try {
+      // Sin filtro de activo → trae todos, incluyendo soft-deleted
+      const lista = await GastosAPI.listar({});
+      renderHistorial(lista);
+    } catch (err) {
+      showToast("❌ Error cargando historial: " + err.message);
+    }
   }
 
-  function filterHistorial() {
-    const texto     = (document.getElementById("hist-q")?.value     || "").toLowerCase();
-    const categoria =  document.getElementById("hist-cat")?.value   || "";
+  async function filterHistorial() {
+    const texto     = (document.getElementById("hist-q")?.value      || "").toLowerCase();
+    const categoria =  document.getElementById("hist-cat")?.value    || "";
     const estado    =  document.getElementById("hist-status")?.value || "";
-    const desde     =  document.getElementById("hist-from")?.value  || "";
-    const hasta     =  document.getElementById("hist-to")?.value    || "";
+    const desde     =  document.getElementById("hist-from")?.value   || "";
+    const hasta     =  document.getElementById("hist-to")?.value     || "";
 
-    let lista = [...historial];
+    try {
+      let lista = await GastosAPI.listar({ nombre: texto || undefined });
 
-    if (texto)     lista = lista.filter(g => g.nombre.toLowerCase().includes(texto));
-    if (categoria) lista = lista.filter(g => g.categoria === categoria);
-    if (estado)    lista = lista.filter(g => getEstado(g).texto === estado);
-    if (desde)     lista = lista.filter(g => g.fecha >= desde);
-    if (hasta)     lista = lista.filter(g => g.fecha <= hasta);
+      // Filtros que se aplican en cliente (rango de fechas y estado calculado)
+      if (categoria) lista = lista.filter(g => g.categoria === categoria);
+      if (estado)    lista = lista.filter(g => getEstado(g).texto === estado);
+      if (desde)     lista = lista.filter(g => g.fecha >= desde);
+      if (hasta)     lista = lista.filter(g => g.fecha <= hasta);
 
-    paginaActual = 1;
-    renderHistorial(lista);
+      paginaActual = 1;
+      renderHistorial(lista);
+    } catch (err) {
+      showToast("❌ " + err.message);
+    }
+  }
+
+  function changeHistPage(dir) {
+    const total = Math.max(1, Math.ceil(listaActual.length / POR_PAGINA));
+    paginaActual = Math.min(Math.max(1, paginaActual + dir), total);
+    renderHistorial();
   }
 
   window.filterHistorial = filterHistorial;
 
   document.addEventListener("DOMContentLoaded", () => {
-    renderHistorial();
+    cargarHistorial();
     document.getElementById("hist-prev")?.addEventListener("click", () => changeHistPage(-1));
     document.getElementById("hist-next")?.addEventListener("click", () => changeHistPage(1));
   });
