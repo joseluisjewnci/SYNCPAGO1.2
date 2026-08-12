@@ -21,7 +21,7 @@
     <div class="sidebar-logo" role="img" aria-label="SyncPago">SYNC<span>PAGO</span></div>
     <div class="sidebar-nav">
       <a class="nav-item active" href="dashboard.html" data-i18n="inicio">🏠 Inicio</a>
-      <a class="nav-item" href="gastos.html" data-i18n="recibos">📋 Mis Recibos</a>
+      <a class="nav-item" href="gastos.html" data-i18n="gastos">📋 Mis Gastos</a>
       <a class="nav-item" href="recordatorios.html" data-i18n="recordatorios">
         🔔 Recordatorios
         <span class="nav-badge" id="badge-rec">0</span>
@@ -30,7 +30,7 @@
       <a class="nav-item" href="historial.html" data-i18n="historial">🕓 Historial</a>
     </div>
     <button class="nav-btn-add" onclick="window.location.href='gastos.html'"
-            data-i18n="agregar">+ Agregar Recibo</button>
+            data-i18n="agregar">+ Agregar Gasto</button>
   </nav>
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
@@ -41,8 +41,8 @@
 
       <div class="search-bar" role="search">
         <span class="search-icon" aria-hidden="true">🔍</span>
-        <input type="text" placeholder="Buscar Recibos..." id="global-search"
-               aria-label="Buscar recibos" data-i18n-placeholder="buscar">
+        <input type="text" placeholder="Buscar Gastos..." id="global-search"
+               aria-label="Buscar gastos" data-i18n-placeholder="buscar">
       </div>
 
       <div class="topbar-right">
@@ -86,7 +86,7 @@
           <article class="kpi-card">
             <div class="kpi-label">Total este mes</div>
             <div class="kpi-value" id="kpi-total">$0</div>
-            <div class="kpi-sub">en recibos registrados</div>
+            <div class="kpi-sub">en gastos registrados</div>
           </article>
           <article class="kpi-card green">
             <div class="kpi-label">Pagados</div>
@@ -154,40 +154,7 @@
 <script src="../js/utils.js"></script>
 <script src="../js/i18n.js"></script>
 <script src="../js/dashboard.js"></script>
-<script>
-  requireAuth();
 
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("open");
-  }
-  function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("open");
-  }
-  function toggleDropdown() {
-    const dd = document.getElementById("user-dropdown");
-    dd.classList.toggle("open");
-  }
-  document.addEventListener("click", e => {
-    const menu = document.querySelector(".user-menu");
-    const dd   = document.getElementById("user-dropdown");
-    if (dd && menu && !menu.contains(e.target)) dd.classList.remove("open");
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-
-    const gastos  = JSON.parse(localStorage.getItem("gastos") || "[]");
-    const hoy     = new Date();
-    const proximos = gastos.filter(g => {
-      if (!g.activo || g.estado === "Pagado") return false;
-      const diff = Math.ceil((new Date(g.fecha + "T12:00:00") - hoy) / 86400000);
-      return diff >= 0 && diff <= 3;
-    }).length;
-    const badge = document.getElementById("badge-rec");
-    if (badge) badge.textContent = proximos;
-  });
-</script>
 
 </body>
 </html>
