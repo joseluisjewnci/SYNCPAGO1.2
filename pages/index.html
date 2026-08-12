@@ -38,18 +38,18 @@
   </style>
 </head>
 <body>
- 
+
 <div class="auth-screen">
   <div class="auth-inner">
- 
+
     <header class="auth-logo" role="banner">
       SYNC<span>PAGO</span>
     </header>
- 
+
     <main>
       <section class="auth-card" aria-label="Formulario de inicio de sesión">
         <h1>Iniciar sesión</h1>
- 
+
         <span class="role-label">Ingresar como</span>
         <div class="role-selector" role="group" aria-label="Seleccionar rol">
           <button class="role-btn active" id="btn-cliente" onclick="selectRol('cliente')">
@@ -61,72 +61,67 @@
             Administrador
           </button>
         </div>
- 
+
         <div class="field-group" id="fg-email">
           <span class="icon" aria-hidden="true">✉</span>
           <input type="email" id="email" placeholder="Correo electrónico"
                  autocomplete="email" aria-label="Correo electrónico">
           <p class="field-error" role="alert">Ingresa un correo válido.</p>
         </div>
- 
+
         <div class="field-group" id="fg-pass">
           <span class="icon" aria-hidden="true">🔒</span>
           <input type="password" id="password" placeholder="Contraseña"
                  autocomplete="current-password" aria-label="Contraseña">
           <p class="field-error" role="alert">La contraseña es obligatoria.</p>
         </div>
- 
+
         <a class="forgot-link" href="forgot-password.html">¿Olvidaste tu contraseña?</a>
- 
+
         <button class="btn-primary" onclick="handleLogin()">Iniciar sesión</button>
       </section>
- 
+
       <p class="auth-link">
         ¿No tienes cuenta? <a href="register.html">Regístrate</a>
       </p>
     </main>
- 
+
   </div>
 </div>
- 
+
+<script src="../js/api.js"></script>
 <script src="../js/auth.js"></script>
 <script>
   let rolSeleccionado = "cliente";
- 
+
   function selectRol(rol) {
     rolSeleccionado = rol;
     document.getElementById("btn-cliente").classList.toggle("active", rol === "cliente");
     document.getElementById("btn-administrador").classList.toggle("active", rol === "administrador");
- 
-    const input = document.getElementById("email");
-    if (rol === "administrador") {
-      input.placeholder = "Correo de administrador";
-    } else {
-      input.placeholder = "Correo electrónico";
-    }
+    document.getElementById("email").placeholder =
+      rol === "administrador" ? "Correo de administrador" : "Correo electrónico";
   }
- 
+
   function handleLogin() {
     const email    = document.getElementById("email");
     const password = document.getElementById("password");
     let valid = true;
- 
+
     const setErr = (id, cond) => {
       document.getElementById(id).classList.toggle("error", cond);
       if (cond) valid = false;
     };
- 
+
     setErr("fg-email", !email.value || !email.value.includes("@"));
     setErr("fg-pass",  !password.value);
- 
+
     if (valid) login(email.value, password.value, rolSeleccionado);
   }
- 
+
   document.addEventListener("keydown", e => {
     if (e.key === "Enter") handleLogin();
   });
 </script>
- 
+
 </body>
 </html>
- 
