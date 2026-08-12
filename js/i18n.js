@@ -2,18 +2,18 @@
 const translations = {
   es: {
     inicio:         "Inicio",
-    recibos:        "Mis Recibos",
+    gastos:        "Mis Gastos",
     recordatorios:  "Recordatorios",
     estadisticas:   "Estadísticas",
     historial:      "Historial",
-    agregar:        "+ Agregar Recibo",
-    buscar:         "Buscar Recibos...",
+    agregar:        "+ Agregar Gasto",
+    buscar:         "Buscar Gastos...",
     bienvenida:     "¡Te damos la bienvenida",
     subtitulo:      "Aquí tienes un resumen de tus finanzas. Revisa tus próximos pagos y mantente al día."
   },
   en: {
     inicio:         "Home",
-    recibos:        "My Bills",
+    gastos:        "My Bills",
     recordatorios:  "Reminders",
     estadisticas:   "Statistics",
     historial:      "History",
