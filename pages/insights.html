@@ -105,6 +105,8 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- api.js debe cargarse primero cuando el backend esté listo -->
+<script src="../js/api.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/layout.js"></script>
@@ -125,81 +127,91 @@
 
   let currentDate = new Date();
 
-  function cargarInsights() {
+  async function cargarInsights() {
     const mes  = currentDate.getMonth();
     const anio = currentDate.getFullYear();
 
     document.getElementById("current-month").textContent = `${MESES[mes]} ${anio}`;
 
-    const gastos  = JSON.parse(localStorage.getItem("gastos") || "[]");
-    const hoy     = new Date();
+    try {
+      // Pide todos los gastos activos al backend
+      const gastos = await GastosAPI.listar({ activo: true });
+      const hoy    = new Date();
 
-    const delMes = gastos.filter(g => {
-      if (!g.activo) return false;
-      const f = new Date(g.fecha + "T12:00:00");
-      return f.getMonth() === mes && f.getFullYear() === anio;
-    });
+      const delMes = gastos.filter(g => {
+        const f = new Date(g.fecha + "T12:00:00");
+        return f.getMonth() === mes && f.getFullYear() === anio;
+      });
 
-    const total    = delMes.reduce((a, g) => a + g.monto, 0);
-    const pagados  = delMes.filter(g => g.estado === "Pagado").reduce((a, g) => a + g.monto, 0);
-    const vencidos = delMes.filter(g => {
-      if (g.estado === "Pagado") return false;
-      return new Date(g.fecha + "T12:00:00") < hoy;
-    }).reduce((a, g) => a + g.monto, 0);
-    const pendiente = total - pagados - vencidos;
+      const total    = delMes.reduce((a, g) => a + g.monto, 0);
+      const pagados  = delMes.filter(g => g.estado === "Pagado")
+                             .reduce((a, g) => a + g.monto, 0);
+      const vencidos = delMes.filter(g => {
+        if (g.estado === "Pagado") return false;
+        return new Date(g.fecha + "T12:00:00") < hoy;
+      }).reduce((a, g) => a + g.monto, 0);
+      const pendiente = Math.max(0, total - pagados - vencidos);
 
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
 
-    set("ins-total",   formatMoney(total));
-    set("ins-paid",    formatMoney(pagados));
-    set("ins-pending", formatMoney(Math.max(0, pendiente)));
-    set("ins-overdue", formatMoney(vencidos));
+      set("ins-total",   formatMoney(total));
+      set("ins-paid",    formatMoney(pagados));
+      set("ins-pending", formatMoney(pendiente));
+      set("ins-overdue", formatMoney(vencidos));
 
-    const cats = {};
-    delMes.forEach(g => {
-      cats[g.categoria] = (cats[g.categoria] || 0) + g.monto;
-    });
+      // Distribución por categoría
+      const cats = {};
+      delMes.forEach(g => {
+        cats[g.categoria] = (cats[g.categoria] || 0) + g.monto;
+      });
 
-    const container = document.getElementById("bars-container");
-    if (Object.keys(cats).length === 0) {
-      container.innerHTML = `<p style="color:var(--gray-400);font-size:0.85rem">Sin datos para este mes.</p>`;
-      return;
+      const container = document.getElementById("bars-container");
+      if (Object.keys(cats).length === 0) {
+        container.innerHTML = `<p style="color:var(--gray-400);font-size:0.85rem">Sin datos para este mes.</p>`;
+        return;
+      }
+
+      const iconos = {
+        "Vivienda":"🏠","Servicios":"💡","Salud":"❤️",
+        "Educación":"📚","Ocio":"🎭","Impuestos":"📑","Otro":"📦"
+      };
+
+      container.innerHTML = Object.entries(cats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, monto]) => {
+          const pct   = total > 0 ? Math.round((monto / total) * 100) : 0;
+          const color = catColors[cat] || "#94a3b8";
+          const icon  = iconos[cat]   || "📦";
+          return `
+          <div class="bar-item">
+            <div class="bar-label">
+              <span>${icon} ${cat}</span>
+              <span>${formatMoney(monto)} (${pct}%)</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+          </div>`;
+        }).join("");
+
+    } catch (err) {
+      console.error("Error cargando estadísticas:", err.message);
+      showToast("❌ Error cargando estadísticas");
     }
-
-    const iconos = {
-      "Vivienda":"🏠","Servicios":"💡","Salud":"❤️",
-      "Educación":"📚","Ocio":"🎭","Impuestos":"📑","Otro":"📦"
-    };
-
-    container.innerHTML = Object.entries(cats)
-      .sort((a, b) => b[1] - a[1])
-      .map(([cat, monto]) => {
-        const pct   = total > 0 ? Math.round((monto / total) * 100) : 0;
-        const color = catColors[cat] || "#94a3b8";
-        const icon  = iconos[cat]   || "📦";
-        return `
-        <div class="bar-item">
-          <div class="bar-label">
-            <span>${icon} ${cat}</span>
-            <span>${formatMoney(monto)} (${pct}%)</span>
-          </div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
-          </div>
-        </div>`;
-      }).join("");
   }
 
   function changeMonth(dir) {
     currentDate.setMonth(currentDate.getMonth() + dir);
     cargarInsights();
   }
+
   document.addEventListener("DOMContentLoaded", () => {
     cargarInsights();
   });
+
 </script>
 
 </body>
