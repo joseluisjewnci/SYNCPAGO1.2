@@ -1,8 +1,8 @@
 // auth.js
-// localStorage se usa SOLO para: token JWT, datos básicos del usuario autenticado.
-// La validación real del token se hace contra el backend en requireAuth/requireAdmin.
+// localStorage se usa SOLO para: token JWT y datos básicos del usuario.
+// La validación real del token se hace contra el backend.
 
-async function login(email, password, rol = "cliente") {
+async function login(email, password) {
   try {
     const data = await AuthAPI.login(email, password);
 
@@ -12,9 +12,8 @@ async function login(email, password, rol = "cliente") {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user",  JSON.stringify(usuario));
 
-    window.location.href = usuario.rol === "administrador"
-      ? "admin.html"
-      : "dashboard.html";
+    // Sin admin — todos van al dashboard
+    window.location.href = "dashboard.html";
 
   } catch (err) {
     alert("Error al iniciar sesión: " + err.message);
@@ -45,51 +44,16 @@ function logout() {
   window.location.href = "index.html";
 }
 
-// Verifica el token contra el backend.
-// Si el token es inválido o expiró, el backend responde 401
-// y handleResponse() en api.js redirige a index.html automáticamente.
+// Verifica el token contra el backend en cada carga de página.
+// Si es inválido o expiró, handleResponse() en api.js redirige a index.html.
 async function requireAuth() {
   const token = localStorage.getItem("token");
   if (!token) { window.location.href = "index.html"; return; }
 
   try {
-    // Llama al backend para validar el token y obtener el usuario real
     const usuario = await AuthAPI.me();
-
-    // Actualizar localStorage con los datos frescos del backend
     localStorage.setItem("user", JSON.stringify(usuario));
-
-    if (usuario.rol === "administrador") {
-      window.location.href = "admin.html";
-      return;
-    }
-
     _poblarDOM(usuario);
-
-  } catch (err) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "index.html";
-  }
-}
-
-async function requireAdmin() {
-  const token = localStorage.getItem("token");
-  if (!token) { window.location.href = "index.html"; return; }
-
-  try {
-    const usuario = await AuthAPI.me();
-
-    localStorage.setItem("user", JSON.stringify(usuario));
-
-    if (usuario.rol !== "administrador") {
-      alert("Acceso denegado.");
-      window.location.href = "index.html";
-      return;
-    }
-
-    _poblarDOM(usuario);
-
   } catch (err) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
