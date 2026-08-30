@@ -1,4 +1,4 @@
-// gastos.js — Adaptado al backend real
+// gastos.js — Adaptado al backend real con filtros completos
 
 (function () {
 
@@ -77,11 +77,18 @@
     }
   }
 
-  // ── Filtros (llaman al backend con parámetros) ──
+  // ── Filtros completos ──
+  // Recoge valores de AMBAS barras de búsqueda (topbar + toolbar)
+  // y los tres filtros desplegables (categoría, estado)
   async function filterGastos() {
-    const nombre    = (document.getElementById("search2")?.value      || "").trim();
-    const categoria =  document.getElementById("filter-cat")?.value   || "";
-    const estado    =  document.getElementById("filter-status")?.value || "";
+    // Barra del topbar (#search) y barra del toolbar (#search2)
+    // Se usa el que tenga valor; si ambos tienen, se prioriza search2
+    const textoTopbar  = (document.getElementById("search")?.value  || "").trim();
+    const textoToolbar = (document.getElementById("search2")?.value || "").trim();
+    const nombre    = textoToolbar || textoTopbar || undefined;
+
+    const categoria = document.getElementById("filter-cat")?.value    || undefined;
+    const estado    = document.getElementById("filter-status")?.value || undefined;
 
     try {
       const lista = await GastosAPI.listar({
@@ -109,7 +116,6 @@
     const monto  = document.getElementById("new-monto");
     const fecha  = document.getElementById("new-fecha");
 
-    // Validación frontend
     let ok = true;
     [["ff-nombre", !nombre.value.trim()],
      ["ff-monto",  !monto.value || Number(monto.value) <= 0],
@@ -147,7 +153,6 @@
   // ── Editar ──
   async function openEdit(id) {
     editingId = id;
-    // Buscar en la lista ya cargada (evita una petición extra)
     const g = listaActual.find(x => x.id === id);
     if (!g) return;
 
@@ -223,6 +228,14 @@
   window.filterGastos    = filterGastos;
   window.changePage      = changePage;
 
-  document.addEventListener("DOMContentLoaded", () => cargarGastos());
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarGastos();
+
+    // Conectar la barra de búsqueda del topbar también al filtro
+    const searchTopbar = document.getElementById("search");
+    if (searchTopbar) {
+      searchTopbar.addEventListener("input", filterGastos);
+    }
+  });
 
 })();
