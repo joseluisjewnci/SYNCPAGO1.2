@@ -8,34 +8,6 @@
   <link rel="stylesheet" href="../css/base.css">
   <link rel="stylesheet" href="../css/auth.css">
   <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
-  <style>
-    .role-selector {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-    .role-btn {
-      flex: 1;
-      padding: 10px;
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      background: var(--white);
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 0.88rem;
-      color: var(--gray-500);
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-    }
-    .role-btn.active {
-      border-color: var(--blue-mid);
-      background: #eff6ff;
-      color: var(--blue-mid);
-    }
-    .role-btn .role-icon { display: block; font-size: 1.4rem; margin-bottom: 4px; }
-    .role-label { font-size: 0.75rem; color: var(--gray-400); display: block; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  </style>
 </head>
 <body>
 
@@ -49,18 +21,6 @@
     <main>
       <section class="auth-card" aria-label="Formulario de inicio de sesión">
         <h1>Iniciar sesión</h1>
-
-        <span class="role-label">Ingresar como</span>
-        <div class="role-selector" role="group" aria-label="Seleccionar rol">
-          <button class="role-btn active" id="btn-cliente" onclick="selectRol('cliente')">
-            <span class="role-icon">👤</span>
-            Cliente
-          </button>
-          <button class="role-btn" id="btn-administrador" onclick="selectRol('administrador')">
-            <span class="role-icon">🛡️</span>
-            Administrador
-          </button>
-        </div>
 
         <div class="field-group" id="fg-email">
           <span class="icon" aria-hidden="true">✉</span>
@@ -92,16 +52,6 @@
 <script src="../js/api.js"></script>
 <script src="../js/auth.js"></script>
 <script>
-  let rolSeleccionado = "cliente";
-
-  function selectRol(rol) {
-    rolSeleccionado = rol;
-    document.getElementById("btn-cliente").classList.toggle("active", rol === "cliente");
-    document.getElementById("btn-administrador").classList.toggle("active", rol === "administrador");
-    document.getElementById("email").placeholder =
-      rol === "administrador" ? "Correo de administrador" : "Correo electrónico";
-  }
-
   function handleLogin() {
     const email    = document.getElementById("email");
     const password = document.getElementById("password");
@@ -115,7 +65,7 @@
     setErr("fg-email", !email.value || !email.value.includes("@"));
     setErr("fg-pass",  !password.value);
 
-    if (valid) login(email.value, password.value, rolSeleccionado);
+    if (valid) login(email.value, password.value);
   }
 
   document.addEventListener("keydown", e => {
