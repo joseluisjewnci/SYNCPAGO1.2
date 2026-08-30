@@ -60,7 +60,6 @@ const AuthAPI = {
   },
 
   // Valida el token contra el backend y devuelve el usuario real.
-  // Usado por requireAuth() y requireAdmin() en auth.js.
   async me() {
     const res = await fetch(`${API_URL}/me`, {
       headers: authHeaders()
@@ -70,7 +69,7 @@ const AuthAPI = {
 };
 
 // ══════════════════════════════
-// GASTOS / RECIBOS
+// GASTOS
 // ══════════════════════════════
 const GastosAPI = {
   async listar(params = {}) {
@@ -140,87 +139,25 @@ const RecordatoriosAPI = {
 };
 
 // ══════════════════════════════
-// ADMIN
+// FINANZAS (presupuesto mensual)
 // ══════════════════════════════
-const AdminAPI = {
-  async listarUsuarios(filtro = "") {
-    const q = filtro ? `?search=${filtro}` : "";
-    const res = await fetch(`${API_URL}/admin/usuarios${q}`, { headers: authHeaders() });
+const FinanzasAPI = {
+  // Cuando el backend esté listo, estos métodos reemplazarán el localStorage
+  // que se usa temporalmente en insights.html
+
+  async guardarPresupuesto(monto) {
+    const res = await fetch(`${API_URL}/finanzas/presupuesto`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ monto })
+    });
     return handleResponse(res);
   },
 
-  async toggleUsuario(id) {
-    const res = await fetch(`${API_URL}/admin/usuarios/${id}/toggle`, {
-      method: "PATCH",
+  async obtenerPresupuesto() {
+    const res = await fetch(`${API_URL}/finanzas/presupuesto`, {
       headers: authHeaders()
     });
-    return handleResponse(res);
-  },
-
-  async crearUsuario(datos) {
-    const res = await fetch(`${API_URL}/admin/usuarios`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(datos)
-    });
-    return handleResponse(res);
-  },
-
-  async listarGastos(params = {}) {
-    const q = new URLSearchParams(
-      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined))
-    );
-    const res = await fetch(`${API_URL}/admin/gastos?${q}`, { headers: authHeaders() });
-    return handleResponse(res);
-  },
-
-  async listarGestiones(params = {}) {
-    const q = new URLSearchParams(
-      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined))
-    );
-    const res = await fetch(`${API_URL}/admin/gestiones?${q}`, { headers: authHeaders() });
-    return handleResponse(res);
-  },
-
-  async cambiarEstadoGestion(id, estado) {
-    const res = await fetch(`${API_URL}/admin/gestiones/${id}`, {
-      method: "PATCH",
-      headers: authHeaders(),
-      body: JSON.stringify({ estado })
-    });
-    return handleResponse(res);
-  },
-
-  async listarNotificaciones() {
-    const res = await fetch(`${API_URL}/admin/notificaciones`, { headers: authHeaders() });
-    return handleResponse(res);
-  },
-
-  async responderNotificacion(id, respuesta) {
-    const res = await fetch(`${API_URL}/admin/notificaciones/${id}/responder`, {
-      method: "PATCH",
-      headers: authHeaders(),
-      body: JSON.stringify({ respuesta })
-    });
-    return handleResponse(res);
-  },
-
-  async enviarNotificacion(datos) {
-    const res = await fetch(`${API_URL}/admin/notificaciones/enviar`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(datos)
-    });
-    return handleResponse(res);
-  },
-
-  async listarNotifEnviadas() {
-    const res = await fetch(`${API_URL}/admin/notificaciones/enviadas`, { headers: authHeaders() });
-    return handleResponse(res);
-  },
-
-  async stats() {
-    const res = await fetch(`${API_URL}/admin/stats`, { headers: authHeaders() });
     return handleResponse(res);
   }
 };
