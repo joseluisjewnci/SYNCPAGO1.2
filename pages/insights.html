@@ -61,6 +61,84 @@
         <p>Analiza tus gastos mes a mes y toma mejores decisiones.</p>
       </header>
 
+      <!-- ══════════════════════════════════════
+           SECCIÓN 1: FINANZAS PERSONALES
+           ══════════════════════════════════════ -->
+      <section class="finanzas-section" aria-label="Mis finanzas">
+
+        <!-- Card: ingresar presupuesto mensual -->
+        <article class="finanzas-card presupuesto-card">
+          <div class="finanzas-card-header">
+            <span class="finanzas-icon">💰</span>
+            <div>
+              <h3>Presupuesto mensual para gastos</h3>
+              <p>Ingresa el dinero que tienes disponible este mes para cubrir tus gastos.</p>
+            </div>
+          </div>
+          <div class="presupuesto-input-row">
+            <div class="presupuesto-input-wrap">
+              <span class="presupuesto-prefix">$</span>
+              <input
+                type="number"
+                id="presupuesto-input"
+                placeholder="0"
+                min="0"
+                aria-label="Presupuesto mensual"
+                oninput="actualizarPresupuesto()"
+              >
+            </div>
+            <button class="btn-guardar-presupuesto" onclick="guardarPresupuesto()">
+              Guardar
+            </button>
+          </div>
+          <p class="presupuesto-hint" id="presupuesto-hint"></p>
+        </article>
+
+        <!-- Card: resumen de ahorro mes anterior -->
+        <article class="finanzas-card ahorro-card" id="ahorro-card">
+          <div class="finanzas-card-header">
+            <span class="finanzas-icon">📈</span>
+            <div>
+              <h3>Resumen del mes anterior</h3>
+              <p id="ahorro-mes-label">Comparativa de gastos vs presupuesto.</p>
+            </div>
+          </div>
+
+          <div class="ahorro-grid">
+            <div class="ahorro-item">
+              <span class="ahorro-label">Presupuesto disponible</span>
+              <span class="ahorro-value" id="ahorro-presupuesto">—</span>
+            </div>
+            <div class="ahorro-item">
+              <span class="ahorro-label">Total gastado</span>
+              <span class="ahorro-value red" id="ahorro-gastado">—</span>
+            </div>
+            <div class="ahorro-item ahorro-item-destacado">
+              <span class="ahorro-label" id="ahorro-label-resultado">Ahorro del mes</span>
+              <span class="ahorro-value" id="ahorro-resultado">—</span>
+            </div>
+          </div>
+
+          <!-- Barra de progreso presupuesto vs gasto -->
+          <div class="ahorro-barra-wrap" id="ahorro-barra-wrap" style="display:none">
+            <div class="ahorro-barra-label">
+              <span>Gasto sobre presupuesto</span>
+              <span id="ahorro-pct">0%</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="ahorro-barra-fill" style="width:0%;background:var(--green)"></div>
+            </div>
+          </div>
+
+          <!-- Mensaje motivacional -->
+          <div class="ahorro-mensaje" id="ahorro-mensaje" style="display:none"></div>
+        </article>
+
+      </section>
+
+      <!-- ══════════════════════════════════════
+           SECCIÓN 2: ESTADÍSTICAS DEL MES
+           ══════════════════════════════════════ -->
       <nav class="month-nav" aria-label="Navegación de meses">
         <button onclick="changeMonth(-1)" aria-label="Mes anterior">← Anterior</button>
         <span id="current-month" aria-live="polite">Cargando...</span>
@@ -105,12 +183,15 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- api.js debe cargarse primero cuando el backend esté listo -->
 <script src="../js/api.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/layout.js"></script>
 <script>
+
+  // ══════════════════════════
+  // LÓGICA DE ESTADÍSTICAS
+  // ══════════════════════════
 
   const catColors = {
     "Vivienda":   "#3563e9",
@@ -134,7 +215,6 @@
     document.getElementById("current-month").textContent = `${MESES[mes]} ${anio}`;
 
     try {
-      // Pide todos los gastos activos al backend
       const gastos = await GastosAPI.listar({ activo: true });
       const hoy    = new Date();
 
@@ -162,7 +242,6 @@
       set("ins-pending", formatMoney(pendiente));
       set("ins-overdue", formatMoney(vencidos));
 
-      // Distribución por categoría
       const cats = {};
       delMes.forEach(g => {
         cats[g.categoria] = (cats[g.categoria] || 0) + g.monto;
@@ -208,8 +287,130 @@
     cargarInsights();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+
+  // ══════════════════════════
+  // LÓGICA DE FINANZAS PERSONALES
+  // ══════════════════════════
+
+  // Clave en localStorage solo para preferencias del usuario (no datos de la app)
+  const KEY_PRESUPUESTO = "syncpago_presupuesto_mensual";
+
+  // Carga el presupuesto guardado al iniciar
+  function cargarPresupuestoGuardado() {
+    const guardado = localStorage.getItem(KEY_PRESUPUESTO);
+    if (guardado) {
+      document.getElementById("presupuesto-input").value = guardado;
+      document.getElementById("presupuesto-hint").textContent =
+        `Presupuesto guardado: ${formatMoney(Number(guardado))}`;
+    }
+  }
+
+  // Muestra un preview mientras el usuario escribe
+  function actualizarPresupuesto() {
+    const val = Number(document.getElementById("presupuesto-input").value);
+    if (val > 0) {
+      document.getElementById("presupuesto-hint").textContent =
+        `Presupuesto: ${formatMoney(val)}`;
+    } else {
+      document.getElementById("presupuesto-hint").textContent = "";
+    }
+  }
+
+  // Guarda el presupuesto y calcula el ahorro del mes anterior
+  async function guardarPresupuesto() {
+    const val = Number(document.getElementById("presupuesto-input").value);
+    if (!val || val <= 0) {
+      showToast("❌ Ingresa un monto válido mayor a 0");
+      return;
+    }
+
+    // Guardar en localStorage (preferencia local del usuario, NO datos de la app)
+    // Cuando el backend esté listo: await FinanzasAPI.guardarPresupuesto(val)
+    localStorage.setItem(KEY_PRESUPUESTO, val);
+    document.getElementById("presupuesto-hint").textContent =
+      `✓ Presupuesto guardado: ${formatMoney(val)}`;
+
+    showToast("Presupuesto guardado ✓");
+    await calcularAhorroMesAnterior(val);
+  }
+
+  // Calcula cuánto se gastó el mes anterior y cuánto se ahorró
+  async function calcularAhorroMesAnterior(presupuesto) {
+    try {
+      // Mes anterior
+      const ahora       = new Date();
+      const mesAnterior = ahora.getMonth() === 0 ? 11 : ahora.getMonth() - 1;
+      const anioAnterior = ahora.getMonth() === 0 ? ahora.getFullYear() - 1 : ahora.getFullYear();
+
+      // Pedir gastos al backend
+      const gastos = await GastosAPI.listar({ activo: true });
+
+      const delMesAnterior = gastos.filter(g => {
+        const f = new Date(g.fecha + "T12:00:00");
+        return f.getMonth() === mesAnterior && f.getFullYear() === anioAnterior;
+      });
+
+      const totalGastado = delMesAnterior.reduce((a, g) => a + g.monto, 0);
+      const ahorro       = presupuesto - totalGastado;
+      const pct          = presupuesto > 0 ? Math.min(100, Math.round((totalGastado / presupuesto) * 100)) : 0;
+
+      // Actualizar label del mes
+      document.getElementById("ahorro-mes-label").textContent =
+        `Comparativa de ${MESES[mesAnterior]} ${anioAnterior} vs tu presupuesto.`;
+
+      // Mostrar valores
+      document.getElementById("ahorro-presupuesto").textContent = formatMoney(presupuesto);
+      document.getElementById("ahorro-gastado").textContent     = formatMoney(totalGastado);
+
+      const resultadoEl = document.getElementById("ahorro-resultado");
+      const labelEl     = document.getElementById("ahorro-label-resultado");
+      const barraFill   = document.getElementById("ahorro-barra-fill");
+      const mensajeEl   = document.getElementById("ahorro-mensaje");
+
+      if (ahorro >= 0) {
+        // Ahorró dinero
+        labelEl.textContent       = "💰 Ahorraste";
+        resultadoEl.textContent   = formatMoney(ahorro);
+        resultadoEl.className     = "ahorro-value green";
+        barraFill.style.width     = `${pct}%`;
+        barraFill.style.background = pct < 70 ? "var(--green)" : pct < 90 ? "var(--yellow)" : "var(--red)";
+        mensajeEl.className       = "ahorro-mensaje positivo";
+        mensajeEl.innerHTML       = ahorro === 0
+          ? `😐 Usaste exactamente tu presupuesto. ¡Sin margen de error!`
+          : `🎉 ¡Excelente! En <strong>${MESES[mesAnterior]}</strong> ahorraste <strong>${formatMoney(ahorro)}</strong> de tu presupuesto de gastos. Sigue así.`;
+      } else {
+        // Se pasó del presupuesto
+        labelEl.textContent       = "⚠️ Te excediste en";
+        resultadoEl.textContent   = formatMoney(Math.abs(ahorro));
+        resultadoEl.className     = "ahorro-value red";
+        barraFill.style.width     = "100%";
+        barraFill.style.background = "var(--red)";
+        mensajeEl.className       = "ahorro-mensaje negativo";
+        mensajeEl.innerHTML       = `😟 En <strong>${MESES[mesAnterior]}</strong> gastaste <strong>${formatMoney(Math.abs(ahorro))}</strong> más de lo planeado. Intenta ajustar tus gastos este mes.`;
+      }
+
+      document.getElementById("ahorro-pct").textContent = `${pct}%`;
+      document.getElementById("ahorro-barra-wrap").style.display = "block";
+      mensajeEl.style.display = "block";
+
+    } catch (err) {
+      console.error("Error calculando ahorro:", err.message);
+      showToast("❌ Error calculando el ahorro del mes anterior");
+    }
+  }
+
+  // ══════════════════════════
+  // INICIO
+  // ══════════════════════════
+  document.addEventListener("DOMContentLoaded", async () => {
+    cargarPresupuestoGuardado();
     cargarInsights();
+
+    // Si ya hay presupuesto guardado, calcular el ahorro automáticamente
+    const guardado = localStorage.getItem(KEY_PRESUPUESTO);
+    if (guardado && Number(guardado) > 0) {
+      await calcularAhorroMesAnterior(Number(guardado));
+    }
   });
 
 </script>
